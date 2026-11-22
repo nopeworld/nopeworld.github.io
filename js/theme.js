@@ -1,5 +1,6 @@
-// Day (the default) and Night View. The reader's choice is kept in localStorage ('nope-theme'); the operating system's
-// dark setting is not followed. The <head> script sets <html data-theme> before the first paint, so there is no flash.
+// Day and Night View. Until the reader picks one with the switch, the page follows the operating system (dark → Night,
+// light → Day, and it changes along if the system does); a pick is kept in localStorage ('nope-theme') and then wins.
+// The <head> script sets <html data-theme> the same way before the first paint, so there is no flash.
 // This wires the header switch: the new theme spreads from the switch in a circle (a View Transition; a growing disc
 // where the browser has none; an instant swap with reduced motion), the night's effects (night.js, fetched only for
 // Night View) start with a burst of dust at the switch and the stars fading in. It also hangs a hat on a few headings
@@ -7,7 +8,11 @@
 const KEY = 'nope-theme';
 const d = document.documentElement;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const saved = () => { try { return localStorage.getItem(KEY) === 'night' ? 'night' : 'day'; } catch (e) { return 'day'; } };
+const osDark = matchMedia('(prefers-color-scheme: dark)');
+const stored = () => { try { const v = localStorage.getItem(KEY); return v === 'night' || v === 'day' ? v : null; } catch (e) { return null; } };
+const saved = () => stored() || (osDark.matches ? 'night' : 'day');
+// the system changes its setting (e.g. at sunset): follow it, unless the reader has picked a theme
+osDark.addEventListener?.('change', () => { if (!stored()) setTheme(saved(), false); });
 
 let night = null, nightP = null;
 const loadNight = () => nightP || (nightP = import('./night.js').then(m => (night = m)));

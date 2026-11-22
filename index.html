@@ -28,7 +28,7 @@
   (function () { try { var d = document.documentElement, r = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!r && !location.hash && !sessionStorage.getItem('nope-intro')) d.classList.add('intro-on'); d.classList.add('js'); } catch (e) { /* storage blocked */ } })();
   // Day by default; Night View only when the reader chose it (js/theme.js)
-  (function () { try { document.documentElement.dataset.theme = localStorage.getItem('nope-theme') === 'night' ? 'night' : 'day'; } catch (e) { document.documentElement.dataset.theme = 'day'; } })();
+  (function () { var t = null; try { t = localStorage.getItem('nope-theme'); } catch (e) {} if (t !== 'night' && t !== 'day') t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'night' : 'day'; document.documentElement.dataset.theme = t; })();
 </script>
 <script src="config.js"></script>
 </head>
