@@ -20,8 +20,8 @@ window.NOPE_CONFIG = {
   affiliations: "Learning & Generation Lab, The Hong Kong Polytechnic University",
   // the promotional video after the abstract: an mp4 under site/ (e.g. "media/promo.mp4", with "media/promo.jpg" as poster)
   // or an embed URL (e.g. "https://www.youtube.com/embed/<id>"); "" shows a "coming soon" frame
-  video: "",
-  video_poster: "",
+  video: "media/promo/nopeworld_promo_1080p.mp4",
+  video_poster: "media/promo/nopeworld_promo_poster.webp",
   bibtex: {
     key: "nopeworld2026",
     title: "Non-penetrating World Models",

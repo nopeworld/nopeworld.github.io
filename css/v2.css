@@ -344,13 +344,7 @@ footer { border-top: 0; padding-top: clamp(64px, 9vw, 140px); }
   .casebtn img { aspect-ratio: 2 / 1; height: auto; display: block; }
   .casebar { align-items: flex-start; }
   .cmp-below { margin-top: clamp(88px, 14vh, 150px); }
-  /* limits: three cards side by side in one screen, no stacking */
-  .limits, #limits-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: stretch; }
-  .limit { position: relative; top: auto; min-height: 0; margin: 0; grid-template-columns: 1fr; align-items: start; align-content: start; gap: 14px; padding: 22px 22px 20px; box-shadow: none; }
-  .limit .txt { align-content: start; gap: 8px; }
-  .limit h3 { font-size: clamp(20px, 1.7vw, 26px); }
-  .limit p { font-size: 14.5px; }
-  .limit .big { font-size: clamp(48px, 5vw, 84px); margin-top: 6px; }
+  /* limits: the stacked cards (styles above); user 11-22 asked for them back */
 }
 @media (min-width: 961px) {
   .h-media { max-width: min(1280px, calc((100svh - 500px) * 16 / 9)); }
@@ -402,3 +396,20 @@ svg.chart#t1chart, svg.chart#openchart { width: 100%; height: auto; display: blo
 .tile.hit::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 4; box-shadow: inset 0 0 0 3px var(--wall); animation: tileHit 1.1s ease-out both; }
 @keyframes tileHit { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .chip.pop, .tile.hit::after { animation: none; } .tile:hover { transform: none; } }
+
+/* ---------- Problem: raw and + NoPeWorld in one tile, a shared draggable wipe (user 11-22) ---------- */
+#prob-grid { --cut: 100%; }
+.duo-w { position: relative; border-radius: var(--radius-s); overflow: hidden; isolation: isolate; cursor: ew-resize; touch-action: pan-y; user-select: none; }
+.duo-w > .tile { margin: 0; }
+.duo-w > .tile.wipe-top { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--cut)); }
+.duo-w .tile, .duo-w .tile:hover { transform: none !important; box-shadow: none !important; }
+.duo-w .wipe-top .lbl { left: auto; right: 8px; }
+.duo-w .wipe-top .verdict { left: auto; right: 8px; }
+.duo-w .wipe-top .play { display: none !important; }
+.wipe-cut { position: absolute; top: 0; bottom: 0; left: var(--cut); width: 3px; margin-left: -1.5px; z-index: 6; pointer-events: none; background: var(--wall); box-shadow: 0 0 12px rgba(242, 194, 0, .55); }
+.wipe-cut span { position: absolute; top: 50%; left: 50%; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%; background: var(--wall); box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
+.wipe-cut span::before, .wipe-cut span::after { content: ""; position: absolute; top: 8px; border: 4px solid transparent; }
+.wipe-cut span::before { left: 2px; border-right-color: #241c00; }
+.wipe-cut span::after { right: 2px; border-left-color: #241c00; }
+.duo-w .tile .lbl { font-size: 12px; padding: 3px 8px; }
+.duo-w .tile .verdict .chip { font-size: 11.5px; padding: 3px 8px; }

@@ -35,7 +35,7 @@ function promo() {
   const box = $('#promo'), v = CFG.video; if (!box || !v) return;
   box.innerHTML = '';
   if (/^https?:/.test(v)) box.append(el('iframe', { src: v, title: 'NoPeWorld video', loading: 'lazy', allow: 'autoplay; fullscreen; picture-in-picture', allowfullscreen: '' }));
-  else box.append(el('video', { src: v, controls: '', playsinline: '', preload: 'metadata', poster: CFG.video_poster || null }));
+  else box.append(el('video', { src: v, controls: '', playsinline: '', preload: 'none', poster: CFG.video_poster || null }));   // nothing is fetched until the reader presses play
 }
 
 function bibtex() {

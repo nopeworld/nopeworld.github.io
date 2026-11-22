@@ -218,20 +218,22 @@ function footer(wide) {
   gsap.from('.foot-big span', { x: wide ? -260 : -80, opacity: 0, duration: 1.2, ease: 'expo.out', stagger: .14, scrollTrigger: { trigger: '.foot-big', start: 'top 88%' } });
 }
 
-// ---------- the route marquee: one row drifting slowly at a steady speed (about 36 px/s, not tied to the scroll); it
-// stops under the pointer so a poster can be clicked
-async function marquee() {
+// ---------- the route marquee: drifts, and speeds up with the scroll
+async function marquee(lenis) {
   const gsap = G();
   await ready('#marquee .mq-row button');
   const rows = $$('#marquee .mq-row');
   const tw = rows.map(r => {
-    const dir = Number(r.dataset.dir) || 1, duration = Math.max(90, r.scrollWidth / 2 / 36);
-    return dir > 0 ? gsap.fromTo(r, { xPercent: 0 }, { xPercent: -50, duration, ease: 'none', repeat: -1 })
-      : gsap.fromTo(r, { xPercent: -50 }, { xPercent: 0, duration, ease: 'none', repeat: -1 });
+    const dir = Number(r.dataset.dir) || 1;
+    return dir > 0 ? gsap.fromTo(r, { xPercent: 0 }, { xPercent: -50, duration: 90, ease: 'none', repeat: -1 })
+      : gsap.fromTo(r, { xPercent: -50 }, { xPercent: 0, duration: 90, ease: 'none', repeat: -1 });
   });
   window.ScrollTrigger.create({ trigger: '#marquee', start: 'top bottom', end: 'bottom top', onToggle: (s) => tw.forEach(t => s.isActive ? t.resume() : t.pause()) });
-  $('#marquee').addEventListener('pointerenter', () => tw.forEach(t => gsap.to(t, { timeScale: 0, duration: .3, overwrite: true })));
-  $('#marquee').addEventListener('pointerleave', () => tw.forEach(t => gsap.to(t, { timeScale: 1, duration: .5, overwrite: true })));
+  let boost = 1;
+  const kick = (v) => { boost = Math.min(9, 1 + Math.abs(v) * .35); tw.forEach(t => gsap.to(t, { timeScale: boost, duration: .25, overwrite: true })); gsap.delayedCall(.3, () => tw.forEach(t => gsap.to(t, { timeScale: 1, duration: 1.2, overwrite: true }))); };
+  if (lenis) lenis.on('scroll', ({ velocity }) => { if (Math.abs(velocity) > 1) kick(velocity); });
+  $('#marquee').addEventListener('pointerenter', () => tw.forEach(t => gsap.to(t, { timeScale: .15, duration: .4, overwrite: true })));
+  $('#marquee').addEventListener('pointerleave', () => tw.forEach(t => gsap.to(t, { timeScale: 1, duration: .6, overwrite: true })));
 }
 
 export function initMotion(lenis) {
@@ -247,7 +249,7 @@ export function initMotion(lenis) {
     const { wide } = ctx.conditions;
     headings(wide); rises(); statement(wide, ctx); theaters(); footer(wide);
     let undo = null;
-    if (wide) { heroScroll(); undo = strip(); }        // the limits sit side by side now (no stacking)
+    if (wide) { heroScroll(); undo = strip(); stack(ctx); }   // limits: the three cards stack as you scroll
     return () => { if (undo) undo(); };
   });
   addEventListener('nope:layout', () => { window.ScrollTrigger.sort(); window.ScrollTrigger.refresh(); });

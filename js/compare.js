@@ -17,15 +17,18 @@ export async function initCompare() {
   // generators with a 'slid' verdict in either NoPeWorld mode on a route (the title of the shared-slide entry follows the data)
   const nSlid = (id) => GEN.filter(x => ['collision', 'prediction'].some(m => R[id].res[x][m]?.[0] === 'slid')).length;
   const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six'];
+  // the default is the route where NoPeWorld truly responds like the engine (LingBot's best slide, user 11-22), then the rest
+  const slides = GEN.filter(g => B.best_slide[g]).map(g => { const [id, m] = B.best_slide[g]; return { id, gen: g, mode: m, title: `Best slide · ${GEN_SHORT[g]}`, sub: (R[id].name || '').replace(/^(a|an|the) /i, '') }; })
+    .filter((c, i, a) => a.findIndex(x => x.id === c.id && x.gen === c.gen) === i);
   const cases = [
+    ...slides.slice(0, 1),
     { id: B.teaser, title: 'The teaser route', sub: 'W + A into an oblique wall' },
     { id: B.task2_fig, fig: figOf(B.task2_fig), title: 'A head-on pillar', sub: 'W straight at a stone block' },
     { id: 'ModularGothic_Day__n001', title: `Slides on ${WORD[nSlid('ModularGothic_Day__n001')]} models`, sub: 'W + turn along a balustrade' },
-    ...GEN.filter(g => B.best_slide[g]).map(g => { const [id, m] = B.best_slide[g]; return { id, gen: g, mode: m, title: `Best slide · ${GEN_SHORT[g]}`, sub: (R[id].name || '').replace(/^(a|an|the) /i, '') }; })
-      .filter((c, i, a) => a.findIndex(x => x.id === c.id && x.gen === c.gen) === i),
+    ...slides.slice(1),
   ];
   const bar = $('#casebar');
-  let route = cases[0].id, fig = cases[0].fig || null, gen = 'lingbot', mode = 'collision';
+  let route = cases[0].id, fig = cases[0].fig || null, gen = cases[0].gen || 'lingbot', mode = cases[0].mode || 'collision';
   cases.forEach((c, i) => bar.append(el('button', { class: 'casebtn', 'aria-pressed': i === 0, onclick: (e) => {
     $$('.casebtn', bar).forEach(b => b.setAttribute('aria-pressed', b === e.currentTarget)); route = c.id; fig = c.fig || null; if (c.gen) { gen = c.gen; mode = c.mode; } apply(); } },
     el('img', { src: `media/posters/${c.id}_s.webp`, alt: '', loading: 'lazy', width: 320, height: 180 }), el('span', {}, el('b', {}, c.title), el('em', {}, c.sub)))));

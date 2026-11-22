@@ -159,7 +159,7 @@
     </div>
     <div class="controls" style="margin:0 0 14px">
       <div class="seg dark big" role="group" aria-label="Method" id="prob-mode">
-        <button aria-pressed="true" data-m="raw">Raw models</button><button aria-pressed="false" data-m="collision">+ NoPeWorld</button>
+        <button aria-pressed="false" data-m="raw">Raw</button><button aria-pressed="true" data-m="split">Side by side</button><button aria-pressed="false" data-m="collision">+ NoPeWorld</button>
       </div>
       <button class="iconbtn" id="prob-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
       <label class="toggle"><input type="checkbox" id="prob-ov" checked> Obstacle (SAM&nbsp;2)</label>
@@ -282,7 +282,7 @@
         <p class="lede">100 routes into solid obstacles, 50 open paths where stopping would be wrong, and 131 open-domain images, in three tasks.</p>
       </div>
     </div>
-    <div class="marquee" id="marquee" aria-hidden="true"><div class="mq-row" data-dir="1"></div></div>
+    <div class="marquee" id="marquee" aria-hidden="true"><div class="mq-row" data-dir="1"></div><div class="mq-row" data-dir="-1"></div></div>
     <div class="wrap">
       <div class="tasks">
         <div class="task"><span class="tag">Task 1</span><h3>Decision</h3><p>Each chunk's choice on the true history: missed and false interventions.</p><div class="meta"><span class="chip plain">Missed</span><span class="chip plain">False</span><span class="chip plain">Score</span></div></div>
@@ -346,9 +346,9 @@
   <div class="wrap wide">
     <div class="wrap" style="padding:0">
       <div class="head">
-        <span class="eyebrow"><span class="chap">06</span>Comparisons</span>
+        <span class="eyebrow"><span class="chap">06</span>Task 2 · Comparisons</span>
         <h2>NoPeWorld responds like the engine.</h2>
-        <p class="lede">Unreal, the raw model, external depth and NoPeWorld on one route and one clock. Scrub, step with <kbd>←</kbd> <kbd>→</kbd>, slow it down.</p>
+        <p class="lede">Task&nbsp;2 routes: Unreal, the raw model, external depth and NoPeWorld on one route and one clock. Scrub, step with <kbd>←</kbd> <kbd>→</kbd>, slow it down.</p>
       </div>
     </div>
     <div class="cmp-controls">

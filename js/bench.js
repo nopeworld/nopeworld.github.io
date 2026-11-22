@@ -21,10 +21,11 @@ export async function initBench() {
   const B = await getBench(), C = await getClips();
   const cats = B.categories;
   const routes = B.routes;
-  // ---------- screen A: one row of hand-off frames (twice, for the loop); a click opens that route
-  const mq = $('#marquee .mq-row');
-  if (mq) for (let rep = 0; rep < 2; rep++) for (const r of routes) mq.append(el('button', { tabindex: '-1', 'data-name': `${nameOf(r)} · ${sceneOf(r)}`, onclick: () => openViewer(r) },
+  // ---------- screen A: two rows of hand-off frames (each twice, for the loop), drifting in opposite directions; a click opens that route
+  $$('#marquee .mq-row').forEach((mq, k) => { const half = routes.filter((_, i) => i % 2 === k);
+  for (let rep = 0; rep < 2; rep++) for (const r of half) mq.append(el('button', { tabindex: '-1', 'data-name': `${nameOf(r)} · ${sceneOf(r)}`, onclick: () => openViewer(r) },
     el('img', { src: `media/posters/${r.id}_s.webp`, alt: '', loading: 'lazy', decoding: 'async', width: 320, height: 180 })));
+  });
 
   // ---------- screen B: filters
   const st = { gen: 'lingbot', set: 'critical', obstacle: '', input: '', angle: '', outcome: '', page: 0 };
