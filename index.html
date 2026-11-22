@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Non-penetrating World Models</title>
+<meta name="description" content="Video world models pass through obstacles. Their frozen DiT already predicts the contact; NoPeWorld, a small head on its hidden states, replaces unsafe actions with the closest safe ones. NoPeBench evaluates six generators.">
+<meta name="theme-color" content="#ffffff">
+<meta name="referrer" content="no-referrer">
+<meta name="author" content="Yuhang Dai, Yinwei Wu, Ziyue Lin, Han Ji, Xingyi Yang">
+<meta property="og:title" content="Non-penetrating World Models">
+<meta property="og:description" content="Video world models pass through obstacles. NoPeWorld makes them stop or slide; NoPeBench measures it.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://nopeworld.github.io/media/og.jpg">
+<meta property="og:url" content="https://nopeworld.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/v2.css">
+<link rel="stylesheet" href="vendor/katex.min.css" media="print" onload="this.media='all'">
+<script>
+  // the intro plays once per tab session, only at the top of the page, never with reduced motion
+  (function () { try { var d = document.documentElement, r = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!r && !location.hash && !sessionStorage.getItem('nope-intro')) d.classList.add('intro-on'); d.classList.add('js'); } catch (e) { /* storage blocked */ } })();
+</script>
+<script src="config.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="intro" id="intro" aria-hidden="true">
+  <svg class="intro-mark" viewBox="0 0 26 26"><rect class="iw" x="18" y="2" width="5" height="22" rx="1.5" fill="#f2c200"/><g class="ic"><circle cx="11.5" cy="13" r="6.5" fill="#fff" stroke="#111318" stroke-width="2.2"/><path d="M11.5 13 L17.6 9.6 L17.6 16.4 Z" fill="#111318" opacity=".85"/></g></svg>
+  <div class="intro-word">obstacles stay solid</div>
+</div>
+
+<header class="header" id="header">
+  <div class="bar">
+    <a class="brand" href="#top" aria-label="NoPeWorld, back to top">
+      <svg class="brand-mark" viewBox="0 0 26 26" aria-hidden="true"><rect x="18" y="2" width="5" height="22" rx="1.5" fill="#f2c200"/><circle cx="11.5" cy="13" r="6.5" fill="#fff" stroke="#111318" stroke-width="2.2"/><path d="M11.5 13 L17.6 9.6 L17.6 16.4 Z" fill="#111318" opacity=".85"/></svg>
+      <span>NoPeWorld</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <ol>
+        <li><a href="#problem"><i>01</i>Problem</a></li>
+        <li><a href="#knows"><i>02</i>Insight</a></li>
+        <li><a href="#method"><i>03</i>Method</a></li>
+        <li><a href="#bench"><i>04</i>NoPeBench</a></li>
+        <li><a href="#results"><i>05</i>Results</a></li>
+        <li><a href="#compare"><i>06</i>Compare</a></li>
+        <li><a href="#open"><i>07</i>Open domain</a></li>
+        <li><a href="#limits"><i>08</i>Limits</a></li>
+        <li><a href="#cite"><i>09</i>BibTeX</a></li>
+      </ol>
+      <span class="nav-ind" aria-hidden="true"></span>
+    </nav>
+    <div class="tools">
+      <details class="mnav"><summary aria-label="Sections">Sections</summary>
+        <ol><li><a href="#problem"><i>01</i>Problem</a></li><li><a href="#knows"><i>02</i>Insight</a></li><li><a href="#method"><i>03</i>Method</a></li><li><a href="#bench"><i>04</i>NoPeBench</a></li>
+        <li><a href="#results"><i>05</i>Results</a></li><li><a href="#compare"><i>06</i>Compare</a></li><li><a href="#open"><i>07</i>Open domain</a></li><li><a href="#limits"><i>08</i>Limits</a></li><li><a href="#cite"><i>09</i>BibTeX</a></li></ol>
+      </details>
+      <label class="lowdata" title="Low data: show still frames; a video loads only when you press play">
+        <input type="checkbox" id="lowdata" aria-label="Low-data mode"> <span>Low data</span>
+      </label>
+    </div>
+  </div>
+  <div class="rail" aria-hidden="true"><div class="track"></div><div class="wallseg"></div><div class="cam"></div></div>
+</header>
+
+<main id="main">
+<!-- ======================================================= HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-wrap">
+    <div class="hero-top">
+      <h1 class="title" id="title"><span class="t1"><span class="np">Non-</span><span class="pen">penetrating</span></span> <span class="t2">World Models</span></h1>
+      <div class="hero-side">
+        <p class="tagline"><span>World models pass through obstacles.</span> <span>NoPeWorld makes them stop or slide.</span></p>
+        <p class="authors"><span data-cfg="authors"><span class="nm">Yuhang Dai</span>, <span class="nm">Yinwei Wu</span>, <span class="nm">Ziyue Lin</span>, <span class="nm">Han Ji</span>, <span class="nm">Xingyi Yang<a class="corr" href="mailto:xingyi.yang@polyu.edu.hk" title="Corresponding author" aria-label="Corresponding author: e-mail"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/><path d="M3 5.5l7 5.5 7-5.5"/></svg></a></span></span><span class="affil" data-cfg="affil">Learning &amp; Generation Lab, The Hong Kong Polytechnic University</span></p>
+        <div class="links" id="links"></div>
+      </div>
+    </div>
+    <figure class="h-media">
+      <div class="stage" id="hero-stage" aria-label="Comparison: LingBot-World 2.0 raw (left) and with NoPeWorld (right), W held at a brick pillar">
+        <video muted playsinline loop preload="none" data-role="l"></video>
+        <div class="clipR"><video muted playsinline loop preload="none" data-role="r"></video></div>
+        <canvas class="ov" data-role="ovl"></canvas>
+        <div class="tag l"><span class="dot raw"></span>Raw model</div>
+        <div class="tag r"><span class="dot ours"></span>+ NoPeWorld</div>
+        <div class="hud"><span class="key on">W</span><span>held 8 s</span></div>
+        <div class="handle" role="slider" tabindex="0" aria-label="Wipe position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+          <span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l-4 5 4 5M13 5l4 5-4 5"/></svg></span>
+        </div>
+        <div class="cursor-tag" aria-hidden="true">drag to compare</div>
+      </div>
+      <figcaption class="controls stage-controls">
+        <button class="iconbtn" id="hero-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
+        <div class="seg" role="group" aria-label="Seed" id="hero-seeds">
+          <button aria-pressed="true" data-seed="1">Seed 1</button><button aria-pressed="false" data-seed="2">Seed 2</button><button aria-pressed="false" data-seed="3">Seed 3</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="hero-ov"> Obstacle (SAM&nbsp;2)</label>
+        <span class="cap">LingBot-World&nbsp;2.0, one station image, <kbd>W</kbd> held at the pillar.</span>
+        <span class="infobox"><button class="info" aria-expanded="false" aria-label="About this clip">i</button><span class="info-pop" role="note">Left: the raw model opens an arch in the bricks and walks through. Right: with NoPeWorld (collision mode) it stops at the bricks. Same image, prompt and seed on both sides. The raw model goes through in 3 of 3 seeds and NoPeWorld stops in 3 of 3, checked frame by frame. Real outputs at their native 832&thinsp;px.</span></span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================= THE NUMBER (pinned on wide screens) -->
+<section class="statement" id="numbers" aria-label="Headline result">
+  <div class="st-pin">
+    <div class="wrap">
+      <div class="st-grid">
+        <div class="st-num" id="num-headline">
+          <div class="big"><span class="from" data-count="74">74%</span><span class="arrow" aria-hidden="true"></span><span class="to" data-count="16">16%</span></div>
+          <p class="lab"><span class="la">of generated videos penetrate or erase the obstacle.</span> <span class="lb">Averaged over six frozen world models on NoPeBench, before and after NoPeWorld.</span>
+            <span class="infobox"><button class="info" aria-expanded="false" aria-label="About this number">i</button><span class="info-pop" role="note">Task&nbsp;2 violation rate (the camera penetrates, tunnels through or erases the obstacle; VGGT-Ω evaluator on true Unreal geometry), averaged over six generators: raw model vs. + NoPeWorld in collision mode. Bars: each generator.</span></span></p>
+        </div>
+        <div class="st-bars"><div class="bars" id="num-bars" role="img" aria-label="Violation rate per generator, raw and with NoPeWorld"></div></div>
+      </div>
+      <div class="st-minis">
+        <div class="mini"><b>&lt;2M</b><span>head parameters. The generator stays frozen.</span></div>
+        <div class="mini"><b>34</b><span>motions scored per chunk, before it is drawn.</span></div>
+        <div class="mini"><b>+1%</b><span>time in prediction mode. No extra DiT pass.</span>
+          <span class="infobox"><button class="info" aria-expanded="false" aria-label="About these numbers">i</button><span class="info-pop" role="note">34 candidates: the input, a stop, shorter steps and turns up to 90°. +1%: +0.7&thinsp;s on a 53.7&thinsp;s route, LingBot-World&nbsp;2.0.</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="abstract-wrap" aria-label="Abstract">
+  <div class="wrap">
+    <details class="abstract">
+      <summary><span class="eyebrow">Abstract</span><span class="more-txt">Read</span></summary>
+      <p>We study a new problem of preventing object penetration in interactive video world models. To understand how existing models handle this, we introduce <b>NoPeBench</b>, a benchmark that evaluates how world models respond to physical obstacles. Our evaluation reveals that none of the open-source models can reliably prevent such failures.</p>
+      <p>Surprisingly, however, these models already encode the information needed to predict such violations. We find that the hidden states of diffusion transformers (DiTs) can predict whether a candidate action will penetrate an obstacle. Building on this, we introduce <b>NoPeWorld</b>, a lightweight framework that detects and prevents penetration. Specifically, we train a small prediction head on top of a frozen DiT's hidden states to read out if a candidate action is safe or not. Unsafe actions are then replaced with safe ones that best preserve the original intent.</p>
+      <p>Despite its simplicity, NoPeWorld substantially reduces the physical violation rate, averaged over six video world models, from 74% to 16%. Remarkably, our method shows zero-shot generalization to open-domain imagery, third-person viewpoints, and moving obstacles. We publicly release our code, the NoPeBench benchmark, and model weights at the links above.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ======================================================= PROBLEM (dark) -->
+<section class="promo-wrap" id="video" aria-label="Video">
+  <div class="wrap">
+    <div class="promo" id="promo">
+      <div class="promo-empty"><span class="promo-play" aria-hidden="true"></span><span class="promo-t">Video</span><span class="promo-s">coming soon</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="problem" class="theater">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><span class="chap">01</span>The problem</span>
+      <h2>World models pass through obstacles.</h2>
+      <p class="lede">Held <kbd>W</kbd>+<kbd>A</kbd> into a courtyard wall, five of six generators pass through it and one backs away. Unreal Engine slides along it.</p>
+    </div>
+    <div class="controls" style="margin:0 0 14px">
+      <div class="seg dark big" role="group" aria-label="Method" id="prob-mode">
+        <button aria-pressed="true" data-m="raw">Raw models</button><button aria-pressed="false" data-m="collision">+ NoPeWorld</button>
+      </div>
+      <button class="iconbtn" id="prob-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
+      <label class="toggle"><input type="checkbox" id="prob-ov" checked> Obstacle (SAM&nbsp;2)</label>
+      <div class="scrub"><input type="range" id="prob-scrub" min="0" max="1000" value="0" aria-label="Time"><span class="time" id="prob-time">0.00 s</span></div>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="How to read this">i</button><span class="info-pop" role="note">Unreal Engine, the ground truth, slides along the wall. Five of six raw generators pass through it; WorldPlay2 backs away. With NoPeWorld every one stops at the wall. <b>Chips</b> are the Task&nbsp;2 evaluator's verdict on that exact video. <b>Yellow</b> is the evaluator's SAM&nbsp;2.1 track of the wall, started from Unreal's true mask; it ends once SAM&nbsp;2 loses the wall (no mask for 0.25&thinsp;s, or the mask collapsing as a camera enters it), which also happens when a camera slides past or backs away. The chip, not the overlay, is the verdict.</span></span>
+    </div>
+    <div class="split prob-split">
+      <div class="sweep-host"><div class="grid7" id="prob-grid"></div><div class="sweep" aria-hidden="true"></div></div>
+      <div class="prob-side">
+        <div id="prob-unreal"></div>
+        <div class="topview" id="prob-top"><canvas></canvas><div class="map3d" id="prob-3d" hidden></div><span class="view-tag" id="prob-3d-tag" hidden>drag to turn</span></div>
+        <div class="legend"><span><i class="dash"></i>input</span><span><i class="gt"></i>Unreal</span><span><i class="raw"></i>raw</span><span><i class="ours"></i>+ NoPeWorld</span><span><i class="wall"></i>obstacle</span>
+          <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the map">i</button><span class="info-pop" role="note">Unreal's true map, sliced at body height (in 3D: the same slice, extruded). Each generator's camera path is reconstructed from its own video by the Task&nbsp;2 evaluator (VGGT-Ω).</span></span></div>
+      </div>
+    </div>
+
+    <div class="play-wrap">
+      <div class="pg" id="pg" tabindex="0" aria-label="Playground: drive the camera with W A S D or by dragging"><canvas></canvas>
+        <div class="hint"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or drag</div>
+        <span class="pg-tag">illustration on the true map, not a model output</span>
+      </div>
+      <div class="pg-side">
+        <span class="eyebrow"><span class="chap">01b</span>What it should do</span>
+        <h3>Stop or slide. Never pass through.</h3>
+        <p class="pg-legend"><span class="ghost">Red</span> follows your keys, as a raw world model does. <span class="inkcam">Black</span> keeps only the motion the obstacle allows, as a game engine does: it stops head-on and slides when oblique.</p>
+        <div class="pad" aria-label="Touch keys"><button class="w" data-k="w">W</button><button class="a" data-k="a">A</button><button class="s" data-k="s">S</button><button class="d" data-k="d">D</button></div>
+        <div class="eq"><div class="m" data-math="slide">v = u − min(0, u·n) n</div></div>
+        <p class="note"><span id="pg-label" class="mono"></span>
+          <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the playground">i</button><span class="info-pop" role="note">Collide-and-slide (Baraff, 1989): <i>u</i> the commanded motion, <i>n</i> the wall's normal. <b>Rays:</b> the 34 candidate motions for the next chunk (0.9&thinsp;m), green when the swept collision disc keeps a 5&thinsp;cm margin on this map. <b>Thick:</b> the training label, the safe candidate closest to the collide-and-slide response. NoPeWorld has no map: its head learns these labels from Unreal replays and then reads them off the video model's hidden states.</span></span></p>
+        <button class="btn" id="pg-reset">Reset</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= THE DIT KNOWS -->
+<section id="knows">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><span class="chap">02</span>The insight</span>
+      <h2>The DiT already predicts the contact.</h2>
+      <p class="lede">Before a chunk is drawn, the frozen DiT's hidden states already tell which candidate motions would penetrate the obstacle.</p>
+    </div>
+    <div class="controls" style="margin:0 0 12px">
+      <div class="seg" role="group" aria-label="Route" id="knows-route"></div>
+      <div class="seg dark" role="group" aria-label="Mode" id="knows-mode">
+        <button aria-pressed="true" data-m="collision">Collision mode</button><button aria-pressed="false" data-m="prediction">Prediction mode</button>
+      </div>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About this view">i</button><span class="info-pop" role="note">The head's real scores on LingBot-World&nbsp;2.0, chunk by chunk, in step with the video.</span></span>
+    </div>
+    <div class="knows">
+      <div>
+        <div class="tile" id="knows-tile"><video muted playsinline loop preload="none"></video><canvas class="ov"></canvas><div class="lbl"><span class="dot ours"></span>LingBot-World 2.0 + NoPeWorld</div><div class="verdict"></div></div>
+        <div class="chunks" id="knows-chunks" role="group" aria-label="Chunks"></div>
+        <div class="controls" style="margin-top:10px">
+          <button class="iconbtn" id="knows-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
+          <label class="toggle"><input type="checkbox" id="knows-slow"> 0.5× speed</label>
+          <span class="note" id="knows-time"></span>
+        </div>
+      </div>
+      <div class="fanbox">
+        <svg id="fan" viewBox="0 0 400 300" role="img" aria-label="The 34 candidate motions, coloured by the head's safety estimate"></svg>
+        <div class="pstrip" id="pstrip" aria-hidden="true"></div>
+        <div class="readout" id="fan-read">Press play.</div>
+        <div class="legend" style="margin-top:0"><span><i style="background:#8fd1ad;height:8px;width:10px"></i>safe</span><span><i style="background:#f0a59c;height:8px;width:10px"></i>unsafe</span><span><i style="background:var(--ink);height:8px;width:10px"></i>chosen</span><span><i class="dash"></i>input</span></div>
+      </div>
+    </div>
+    <div class="findings">
+      <div class="finding"><div class="k">Readable before pixels.</div><p>One chunk ahead, before those frames are denoised.</p></div>
+      <div class="finding"><div class="k">In the DiT, not in pixels.</div><p>On VAE latents or decoded pixels, the same head barely beats keeping the input.</p></div>
+      <div class="finding"><div class="k">It knows, but does not act.</div><p>The raw model still passes through. NoPeWorld turns the prediction into the action.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= METHOD -->
+<section id="method">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><span class="chap">03</span>Method</span>
+      <h2>Read the DiT, replace unsafe actions.</h2>
+      <p class="lede">Before each chunk, a head under 2&thinsp;M parameters scores 34 candidate motions on the frozen DiT: a safe input is kept, an unsafe one becomes the closest safe motion.</p>
+    </div>
+  </div>
+  <div class="method-pin" id="method-pin">
+    <div class="wrap">
+      <div class="method-stage">
+        <div class="archbox"><svg class="arch" id="arch" viewBox="0 0 760 430" role="img" aria-label="NoPeWorld architecture"></svg></div>
+        <div class="steps" id="steps">
+          <div class="step" data-s="0"><div class="n">01</div><h3>Start chunk k</h3><p>Memory plus the user's command <i>u<sub>k</sub></i>. All weights frozen.</p></div>
+          <div class="step" data-s="1"><div class="n">02</div><h3>Tap the hidden states</h3><p>Mid-to-deep blocks, every token, no pooling.</p></div>
+          <div class="step" data-s="2"><div class="n">03</div><h3>Score 34 candidates</h3><p>Safety P̂, clearance and intent Â for each.</p></div>
+          <div class="step" data-s="3"><div class="n">04</div><h3>Keep or replace</h3><p>Safe input stays. Unsafe: the safe motion closest to it.</p></div>
+          <div class="step" data-s="4"><div class="n">05</div><h3>Draw the chunk</h3><p>The generator's own sampler, then chunk k+1.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="card mode-card">
+      <div class="controls" style="margin:0 0 8px;justify-content:space-between">
+        <h3>Two modes, two places to read</h3>
+        <div class="seg dark" role="group" aria-label="Mode" id="tl-mode"><button aria-pressed="true" data-m="collision">Collision mode</button><button aria-pressed="false" data-m="prediction">Prediction mode</button></div>
+      </div>
+      <div class="timeline"><svg id="timeline" viewBox="0 0 900 300" role="img" aria-label="Where each mode reads the DiT: the frozen model, prediction mode and collision mode at chunk k"></svg></div>
+      <p class="note" id="tl-note"></p>
+    </div>
+    <div class="split even" style="margin-top:16px">
+      <div class="card" id="costs">
+        <h3>Added time per route</h3>
+        <div class="costs" id="cost-bars"></div>
+        <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the timing">i</button><span class="info-pop" role="note">LingBot-World&nbsp;2.0, 49 routes, 7 decisions each; the raw model takes 53.7&thinsp;s per route.</span></span>
+      </div>
+      <div class="card">
+        <h3>Trained on Unreal geometry only</h3>
+        <p class="note">729 replays from 44 training scenes, none shared with the benchmark.
+          <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the labels">i</button><span class="info-pop" role="note">Unreal Engine videos are replayed through the frozen DiT. Sweeping the camera's collision disc over the true occupancy map labels every candidate with its clearance and its distance from the engine's own collide-and-slide response.</span></span></p>
+        <div class="m" data-math="labels" style="margin-top:12px;font-size:15px">P = Φ((g − m)/0.03 m), A = exp(−ε²/2s²), R = P·A</div>
+      </div>
+    </div>
+    <details class="math">
+      <summary>The math <span class="more-txt">Show</span></summary>
+      <div class="eqs">
+        <div class="eq"><b>The constraint</b><div class="m" data-math="discrete">a* = argmin ε(c, u)² s.t. g(c) ≥ m</div><p>The motion closest to the engine's collide-and-slide response whose swept disc keeps a 5&thinsp;cm margin.</p></div>
+        <div class="eq"><b>The choice</b><div class="m" data-math="select">a* = u if safe and not much worse, else argmax Â over safe</div><p>Learned safety replaces the unknown map; τ, temperature and margin δ are fixed on validation scenes.</p></div>
+        <div class="eq"><b>Where H is read</b><div class="m" data-math="taps">H(pred) = f(z_{k-1}, 0); H(coll) = f(z_k^(0), t_0)</div><p>Prediction: the commit pass after chunk k−1. Collision: the first denoising step of chunk k.</p></div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ======================================================= BENCHMARK -->
+<section id="bench">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><span class="chap">04</span>NoPeBench</span>
+      <h2>NoPeBench: every route hits an obstacle.</h2>
+      <p class="lede">100 routes into solid obstacles, 50 open paths where stopping would be wrong, and 131 open-domain images, in three tasks.</p>
+    </div>
+  </div>
+  <div class="marquee" id="marquee" aria-hidden="true"><div class="mq-row" data-dir="1"></div><div class="mq-row" data-dir="-1"></div></div>
+  <div class="wrap">
+    <div class="tasks">
+      <div class="task"><span class="tag">Task 1</span><h3>Decision</h3><p>Each chunk's choice on the true history: missed and false interventions.</p><div class="meta"><span class="chip plain">Missed</span><span class="chip plain">False</span><span class="chip plain">Score</span></div></div>
+      <div class="task"><span class="tag">Task 2</span><h3>Generated video</h3><p>Closed-loop rollouts, judged on Unreal's true 3D geometry.</p><div class="meta"><span class="chip plain">Violation</span><span class="chip plain">SIS</span><span class="chip plain">Slide</span></div></div>
+      <div class="task"><span class="tag">Task 3</span><h3>Open domain</h3><p>Single images with static or moving obstacles, judged by VLMs.</p><div class="meta"><span class="chip plain">Static</span><span class="chip plain">Dynamic</span><span class="chip plain">VLM judges</span></div></div>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="stats" id="bench-stats"></div>
+    <div class="cards" id="cards"></div>
+    <div class="more"><button class="btn" id="more">Show more routes</button>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the explorer">i</button><span class="info-pop" role="note">All 150 Task&nbsp;2 routes, unfiltered: the evaluator's verdict for every generator and method (VGGT-Ω, rule v3.1), the true map and every reconstructed camera path. Task&nbsp;1 runs on the same 100 collision routes, teacher-forced on Unreal's history, in 32 held-out scenes. Clips here are small previews (raw and collision mode; open paths: collision mode). A path whose history part misses the true history by more than 15&thinsp;cm is not drawn, as in the paper's figures (207 of 3,400).</span></span></div>
+  </div>
+  <dialog class="viewer" id="viewer" aria-label="Route viewer">
+    <div class="vhead"><h3 id="v-title">Route</h3><div class="seg" role="group" aria-label="Generator" id="v-gen"></div><button class="iconbtn" id="v-close" aria-label="Close"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg></button></div>
+    <div class="vbody">
+      <div class="vgrid">
+        <div>
+          <div class="vtiles" id="v-tiles"></div>
+          <div class="player" style="margin-top:10px"><button class="iconbtn" id="v-play" aria-label="Play"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg></button><div class="scrubwrap"><input type="range" id="v-scrub" min="0" max="1000" value="0" aria-label="Time"></div><span class="time mono small" id="v-time">0.00 s</span></div>
+          <p class="note" id="v-desc" style="margin-top:10px"></p>
+        </div>
+        <div><div class="topview" id="v-top"><canvas></canvas></div><div class="legend"><span><i class="dash"></i>input</span><span><i class="gt"></i>Unreal</span><span><i class="raw"></i>raw</span><span><i class="depth"></i>ext. depth</span><span><i class="ours"></i>Coll</span><span><i class="ours" style="opacity:.5"></i>Pred</span></div></div>
+      </div>
+      <div class="tablewrap"><table class="vtable" id="v-table"></table></div>
+    </div>
+  </dialog>
+</section>
+
+<!-- ======================================================= RESULTS -->
+<section id="results">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><span class="chap">05</span>Results</span>
+      <h2>Fewer violations, more intent kept.</h2>
+      <p class="lede">The best Safe-Intent Score and Overall on all five pose-driven generators. A halt-only depth guard violates less on four of them, but cannot slide.</p>
+    </div>
+    <div class="controls" style="margin:0 0 12px">
+      <div class="seg" role="group" aria-label="Metric" id="metric"></div>
+      <div class="seg dark" role="group" aria-label="View" id="rview"><button aria-pressed="true" data-v="chart">Chart</button><button aria-pressed="false" data-v="table">Table</button></div>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the results">i</button><span class="info-pop" role="note">The main table of the paper, on six frozen generators. External depth reaches few violations by halting, which costs the slide (see Limits).</span></span>
+    </div>
+    <div class="chartbox" id="chartbox"><svg class="chart" id="chart" viewBox="0 0 900 470"></svg><div class="mlegend" id="mlegend"></div><p class="note" id="metric-note" style="margin-top:8px"></p></div>
+    <div class="chartbox tablewrap" id="tablebox" hidden></div>
+    <div class="split r14" style="margin-top:16px">
+      <div class="card white tablewrap"><h3>Task 1: the decision on the true history</h3><p class="note">Share of decisions, 100 routes. The raw model misses every unsafe input and changes no safe one.</p><table class="maintable" id="t1table" style="margin-top:8px"></table></div>
+      <div class="card"><h3>Open paths: does it stop for nothing?</h3><p class="note">Share of the 50 open-path videos that neither stop early nor go back.</p><div id="open-bars" class="costs" style="margin-top:10px"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= COMPARE (dark) -->
+<section id="compare" class="theater">
+  <div class="wrap wide">
+    <div class="wrap" style="padding:0">
+      <div class="head">
+        <span class="eyebrow"><span class="chap">06</span>Comparisons</span>
+        <h2>NoPeWorld responds like the engine.</h2>
+        <p class="lede">Unreal, the raw model, external depth and NoPeWorld on one route and one clock. Scrub, step with <kbd>←</kbd> <kbd>→</kbd>, slow it down.</p>
+      </div>
+    </div>
+    <div class="cmp-controls">
+      <div class="casebar" id="casebar" role="group" aria-label="Route"></div>
+      <div class="controls" style="margin:0">
+        <div class="seg" role="group" aria-label="Generator" id="cmp-gen"></div>
+        <div class="seg dark" role="group" aria-label="NoPeWorld mode" id="cmp-mode"><button aria-pressed="true" data-m="collision">Coll</button><button aria-pressed="false" data-m="prediction">Pred</button></div>
+        <label class="toggle"><input type="checkbox" id="cmp-ov" checked> Obstacle (SAM&nbsp;2)</label>
+        <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the comparison">i</button><span class="info-pop" role="note">Ground truth, the raw model, the external-depth guard and NoPeWorld on the same route, the same seed and the same history.</span></span>
+      </div>
+    </div>
+    <div class="grid4" id="cmp-grid"></div>
+    <div class="player" style="margin-top:12px">
+      <button class="iconbtn" id="cmp-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
+      <button class="iconbtn" id="cmp-prev" aria-label="Previous frame"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11 3v10L4 8z"/></svg></button>
+      <button class="iconbtn" id="cmp-next" aria-label="Next frame"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3v10l7-5z"/></svg></button>
+      <div class="scrubwrap"><input type="range" id="cmp-scrub" min="0" max="1000" value="0" aria-label="Time"><div class="tick" id="cmp-tick" hidden></div></div>
+      <span class="mono small" id="cmp-time">0.00 s · f0</span>
+      <div class="seg" role="group" aria-label="Speed" id="cmp-speed"><button aria-pressed="false" data-r=".25">¼×</button><button aria-pressed="false" data-r=".5">½×</button><button aria-pressed="true" data-r="1">1×</button></div>
+    </div>
+    <div class="cmp-below">
+      <div class="card" id="cmp-info"></div>
+      <div><div class="topview" id="cmp-top"><canvas></canvas></div><div class="legend"><span><i class="dash"></i>input</span><span><i class="gt"></i>Unreal</span><span><i class="raw"></i>raw</span><span><i class="depth"></i>ext. depth</span><span><i class="ours"></i>NoPeWorld</span></div></div>
+    </div>
+    <div class="wipebox" id="wipebox" hidden>
+      <h3 style="margin:18px 0 10px">Wipe: raw vs. NoPeWorld, head-on</h3>
+      <div class="stage" id="wipe-stage" style="max-width:980px">
+        <video muted playsinline loop preload="none" data-role="l"></video>
+        <div class="clipR"><video muted playsinline loop preload="none" data-role="r"></video></div>
+        <canvas class="ov"></canvas>
+        <div class="tag l"><span class="dot raw"></span>Raw</div><div class="tag r"><span class="dot ours"></span>+ NoPeWorld</div>
+        <div class="handle" role="slider" tabindex="0" aria-label="Wipe position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l-4 5 4 5M13 5l4 5-4 5"/></svg></span></div>
+      </div>
+      <p class="note" style="margin-top:8px">Only on head-on routes with a straight input, where both cameras start on the same line.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= OPEN DOMAIN (horizontal strip on wide screens) -->
+<section id="open">
+  <div class="t3-pin" id="t3-pin">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><span class="chap">07</span>Zero-shot</span>
+        <h2>It transfers without retraining.</h2>
+        <p class="lede">Trained only on first-person walks through static Unreal scenes, the heads cut violations on open-domain images, in third person and around moving obstacles.</p>
+      </div>
+      <div class="controls" style="margin:0 0 14px">
+        <div class="seg" role="group" aria-label="Obstacles" id="t3-block"><button aria-pressed="true" data-b="all">All</button><button aria-pressed="false" data-b="static">Static</button><button aria-pressed="false" data-b="dynamic">Moving</button></div>
+        <div class="seg" role="group" aria-label="Viewpoint" id="t3-person"><button aria-pressed="true" data-p="all">Both views</button><button aria-pressed="false" data-p="fp">First person</button><button aria-pressed="false" data-p="tp">Third person</button></div>
+        <label class="toggle"><input type="checkbox" id="t3-ov" checked> Obstacle (SAM&nbsp;2)</label>
+        <span class="note t3-pick">16 examples from the paper's figure, not the score.</span>
+        <span class="infobox"><button class="info" aria-expanded="false" aria-label="How these were chosen">i</button><span class="info-pop" role="note">The 16 pairs of the paper's Task&nbsp;3 figure: one generator per column, chosen so that the original violates by at least three judges and NoPeWorld by at most one. The scores over all 131 images are in Results. Yellow: SAM&nbsp;2.1 tracking of the obstacle named by the case, started from the paper's outline on the input image and drawn until first lost. After each verdict: how many of the four VLM judges gave it.</span></span>
+      </div>
+    </div>
+    <div class="t3-viewport"><div class="t3grid" id="t3grid"></div></div>
+  </div>
+</section>
+
+<!-- ======================================================= LIMITS -->
+<section id="limits">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><span class="chap">08</span>Limits</span>
+      <h2>Limitations.</h2>
+      <p class="lede">NoPeWorld chooses the motion; the generator still has to render it.</p>
+    </div>
+    <div class="limits" id="limits-grid"></div>
+  </div>
+</section>
+
+<!-- ======================================================= CITE -->
+<section id="cite">
+  <div class="wrap">
+    <div class="head">
+      <span class="eyebrow"><span class="chap">09</span>Cite</span>
+      <h2>BibTeX</h2>
+    </div>
+    <div class="bib" id="bib"><button class="copy" id="copy">Copy</button><code id="bibtext"></code></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-big" aria-hidden="true"><span>Stop or slide.</span><span class="fb2">Never pass through.</span></div>
+    <div class="foot-grid">
+      <div>Every clip is a real output of the named model on the named input. Verdicts and numbers come from the paper's evaluators and result files.</div>
+      <div>Generators used frozen, as released: LingBot-World 2.0, HY-WorldPlay, Echo-WM, Evoke-Turbo, WorldPlay2 and Hy-Nomas (the last two concurrent work). Scenes from UnrealZoo; static Task 3 images from WBench.</div>
+      <div>No third-party requests, no cookies.</div>
+    </div>
+    <div class="endwall" aria-hidden="true"></div>
+  </div>
+</footer>
+<div class="tooltip" id="tip" role="tooltip"></div>
+
+<script src="vendor/gsap.min.js" defer></script>
+<script src="vendor/ScrollTrigger.min.js" defer></script>
+<script src="vendor/SplitText.min.js" defer></script>
+<script src="vendor/Flip.min.js" defer></script>
+<script src="vendor/DrawSVGPlugin.min.js" defer></script>
+<script src="vendor/ScrambleTextPlugin.min.js" defer></script>
+<script src="vendor/lenis.min.js" defer></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
