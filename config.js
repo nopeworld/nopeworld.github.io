@@ -18,9 +18,11 @@ window.NOPE_CONFIG = {
     { name: "Xingyi Yang", corresponding: "xingyi.yang@polyu.edu.hk" }
   ],
   affiliations: "Learning & Generation Lab, The Hong Kong Polytechnic University",
-  // the promotional video after the abstract: an mp4 under site/ (e.g. "media/promo.mp4", with "media/promo.jpg" as poster)
-  // or an embed URL (e.g. "https://www.youtube.com/embed/<id>"); "" shows a "coming soon" frame
-  video: "media/promo/nopeworld_promo_1080p.mp4",
+  // the promotional video after the abstract. On play the page tries YouTube; where YouTube cannot be reached (a thumbnail
+  // does not load within 2.5 s, e.g. mainland China) it plays Bilibili if set, else our own file. Nothing loads before play.
+  video_youtube: "dS64U7_3GQs",       // https://youtu.be/dS64U7_3GQs
+  video_bilibili: "",                 // a BV id, e.g. "BV1xx411c7mD", once uploaded
+  video: "media/promo/nopeworld_promo_1080p.mp4",   // our own copy (43.5 MB): the fallback, and the "file" link
   video_poster: "media/promo/nopeworld_promo_poster.webp",
   bibtex: {
     key: "nopeworld2026",

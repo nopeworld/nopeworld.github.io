@@ -32,10 +32,35 @@ function links() {
 }
 
 function promo() {
-  const box = $('#promo'), v = CFG.video; if (!box || !v) return;
+  const box = $('#promo'); if (!box) return;
+  const yt = CFG.video_youtube, bv = CFG.video_bilibili, file = CFG.video;
+  if (!yt && !bv && !file) return;
   box.innerHTML = '';
-  if (/^https?:/.test(v)) box.append(el('iframe', { src: v, title: 'NoPeWorld video', loading: 'lazy', allow: 'autoplay; fullscreen; picture-in-picture', allowfullscreen: '' }));
-  else box.append(el('video', { src: v, controls: '', playsinline: '', preload: 'none', poster: CFG.video_poster || null }));   // nothing is fetched until the reader presses play
+  const frame = (src) => el('iframe', { src, title: 'NoPeWorld video', allow: 'autoplay; fullscreen; picture-in-picture; encrypted-media', allowfullscreen: '', referrerpolicy: 'strict-origin-when-cross-origin' });
+  const own = () => el('video', { src: file, controls: '', playsinline: '', autoplay: '', poster: CFG.video_poster || null });
+  const ytOk = () => new Promise((ok) => {            // can this browser reach YouTube? (a thumbnail, 2.5 s)
+    if (!yt) return ok(false);
+    const img = new Image(); const t = setTimeout(() => ok(false), 2500);
+    img.onload = () => { clearTimeout(t); ok(img.naturalWidth > 0); }; img.onerror = () => { clearTimeout(t); ok(false); };
+    img.src = `https://i.ytimg.com/vi/${yt}/default.jpg?t=${Date.now()}`;
+  });
+  const cover = el('button', { class: 'promo-cover', 'aria-label': 'Play the video', style: CFG.video_poster ? { backgroundImage: `url(${CFG.video_poster})` } : null },
+    el('span', { class: 'promo-play', 'aria-hidden': 'true' }), el('span', { class: 'promo-wait' }, 'Loading the player…'));
+  cover.addEventListener('click', async () => {
+    cover.classList.add('wait');
+    const useYt = await ytOk();
+    box.innerHTML = '';
+    if (useYt) box.append(frame(`https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&rel=0&playsinline=1&modestbranding=1`));
+    else if (bv) box.append(frame(`https://player.bilibili.com/player.html?bvid=${bv}&autoplay=1&high_quality=1&danmaku=0`));
+    else if (file) box.append(own());
+  });
+  box.append(cover);
+  // the other places to watch it
+  const links = [];
+  if (yt) links.push(el('a', { href: `https://youtu.be/${yt}`, target: '_blank', rel: 'noopener' }, 'YouTube'));
+  if (bv) links.push(el('a', { href: `https://www.bilibili.com/video/${bv}`, target: '_blank', rel: 'noopener' }, 'Bilibili'));
+  if (file) links.push(el('a', { href: file, download: '' }, 'MP4 file (43.5 MB)'));
+  if (links.length) { const p = el('p', { class: 'note promo-alt' }, 'Also on '); links.forEach((a, k) => { if (k) p.append(' · '); p.append(a); }); box.after(p); }
 }
 
 function bibtex() {

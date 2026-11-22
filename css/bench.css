@@ -8,7 +8,7 @@
 #bench .bench-a .head { margin-bottom: clamp(16px, 2.4vh, 26px); }
 
 /* ---------- screen A: one row of hand-off frames; a play button on hover; no zoom */
-#bench .marquee { gap: 0; margin: 0 0 clamp(18px, 3vh, 30px); }
+#bench .marquee { display: grid; gap: 14px; margin: 0 0 clamp(18px, 3vh, 30px); }   /* two rows with air between them (user 11-22) */
 #bench .mq-row button { width: clamp(140px, 12.5vw, 196px); border-radius: 10px; }
 #bench .mq-row button:hover img { transform: none; filter: brightness(.78); }
 #bench .mq-row button::before { content: ""; position: absolute; left: 50%; top: 50%; z-index: 1; width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%;

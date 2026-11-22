@@ -327,7 +327,6 @@ footer { border-top: 0; padding-top: clamp(64px, 9vw, 140px); }
   .title, .hero .title { font-size: min(7.2vw, 12vh, 124px); }
   .h-media { max-width: min(1280px, calc((100svh - 470px) * 16 / 9)); }
   /* problem: the six-model grid scales with the screen height; the playground is its own screen */
-  #problem .controls, .prob-split { max-width: min(100%, calc((100svh - 390px) * 1.77)); margin-inline: auto; }
   .play-wrap { margin-top: clamp(88px, 14vh, 150px); }
   /* insight */
   .findings { margin-top: clamp(14px, 2.2vh, 24px); }
@@ -413,3 +412,19 @@ svg.chart#t1chart, svg.chart#openchart { width: 100%; height: auto; display: blo
 .wipe-cut span::after { right: 2px; border-left-color: #241c00; }
 .duo-w .tile .lbl { font-size: 12px; padding: 3px 8px; }
 .duo-w .tile .verdict .chip { font-size: 11.5px; padding: 3px 8px; }
+
+/* promo: our own poster and play button until the reader presses play (then YouTube, Bilibili or our file) */
+.promo-cover { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; display: grid; place-items: center; background: #0b0c0f center / cover no-repeat; }
+.promo-cover .promo-play { width: 76px; height: 76px; margin: 0; transition: transform .3s var(--ease); }
+.promo-cover .promo-play::after { left: 31px; top: 25px; border-left-width: 20px; border-top-width: 13px; border-bottom-width: 13px; }
+.promo-cover:hover .promo-play { transform: scale(1.08); }
+.promo-cover .promo-wait { display: none; position: absolute; bottom: 18px; font: 500 12px var(--mono); color: #fff; background: rgba(0, 0, 0, .55); padding: 4px 10px; border-radius: 999px; }
+.promo-cover.wait .promo-wait { display: block; }
+.promo-alt { text-align: center; margin: 8px auto 0; }
+
+/* user 11-22: the Problem comparison was squeezed into the middle; it now spans up to 1280 px (as wide as the hero video),
+   past the text column, and the controls line up with it */
+@media (min-width: 961px) {
+  #problem .prob-split, #problem .wrap > .controls { max-width: none; margin-inline: calc(50% - min(640px, 50vw - 24px)); }
+  #problem .prob-split { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+}
