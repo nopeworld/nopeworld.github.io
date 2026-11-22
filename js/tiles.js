@@ -11,10 +11,11 @@ export function makeTile(group, { label, dot, cls = '' } = {}) {
   const root = el('div', { class: `tile ${cls}` }, video, canvas, lbl, verdict, play);
   const overlay = new Overlay(canvas, video);
   group.add(video, (f) => overlay.draw(f));
+  video.addEventListener('playing', () => root.classList.add('live'), { once: true });   // the clip fades in from its poster
   const t = {
     root, video, overlay, lbl, verdict,
     setLabel(text, d) { lbl.innerHTML = ''; if (d) lbl.append(el('span', { class: `dot ${d}` })); lbl.append(text); },
-    setVerdict(node) { verdict.innerHTML = ''; if (node) verdict.append(node); },
+    setVerdict(node) { verdict.innerHTML = ''; if (node) { verdict.append(node); node.classList.add('pop'); } },
     async setClip(id, res, posterUrl, hasTrack) {
       root.classList.toggle('missing', !id);
       overlay.set(null);

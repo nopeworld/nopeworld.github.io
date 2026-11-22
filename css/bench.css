@@ -1,0 +1,138 @@
+/* NoPeBench in two screens (user 11-22: one screen of information at a time, an obvious play button, less motion).
+   Screen A (.bench-a): the head, one row of hand-off frames, the three tasks. Screen B (.bench-b): a sub-head, compact
+   filters, the rate tiles, two rows of route cards with Prev / Next paging. Each fits in a desktop screen under the
+   header (1440 x 900 and 1280 x 800). Loaded after v2.css; overrides its bench rules. */
+
+/* ---------- section rhythm: the same top padding as the other sections */
+@media (min-width: 961px) { #bench { padding-top: clamp(48px, 7vh, 88px); } }
+#bench .bench-a .head { margin-bottom: clamp(16px, 2.4vh, 26px); }
+
+/* ---------- screen A: one row of hand-off frames; a play button on hover; no zoom */
+#bench .marquee { gap: 0; margin: 0 0 clamp(18px, 3vh, 30px); }
+#bench .mq-row button { width: clamp(140px, 12.5vw, 196px); border-radius: 10px; }
+#bench .mq-row button:hover img { transform: none; filter: brightness(.78); }
+#bench .mq-row button::before { content: ""; position: absolute; left: 50%; top: 50%; z-index: 1; width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 3v10l8-5z' fill='%23111318'/%3E%3C/svg%3E") 56% 50% / 15px no-repeat;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .35); opacity: 0; transition: opacity .15s; pointer-events: none; }
+#bench .mq-row button:hover::before { opacity: 1; }
+
+/* the task cards hold still (no tilt); the tags stay the first thing read */
+#bench .tasks .task { transform: none !important; }
+#bench .tasks .task { padding: 20px 22px 18px; }
+#bench .tasks .task h3 { margin-top: 12px; }
+
+/* ---------- screen B */
+.bench-b { margin-top: clamp(56px, 11vh, 120px); scroll-margin-top: calc(var(--header-h) + 12px); }
+.bench-b .subhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin: 0 0 14px; }
+.bench-b .subhead h3 { position: relative; margin: 0; padding-left: .34em; font-size: clamp(22px, 2.1vw, 30px); font-weight: 760; letter-spacing: -.025em; line-height: 1.1; }
+.bench-b .subhead h3::before { content: ""; position: absolute; left: 0; top: .1em; bottom: .06em; width: .1em; border-radius: .03em; background: var(--wall); }
+.bench-b .subhead p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+
+/* filters: generator and route set as button groups, the rest as selects */
+.bfilters { display: grid; gap: 8px; margin: 0 0 12px; }
+.bfilters .frow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.bfilters .fgroup, .bfilters .fsel { display: inline-flex; align-items: center; gap: 8px; min-width: 0; max-width: 100%; }
+.bfilters .fl { font-size: 11.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+.bfilters .seg { flex-wrap: wrap; }
+.bfilters .seg button { padding: 6px 11px; font-size: 13.5px; }
+.bfilters .seg .n { font: 500 11px var(--mono); opacity: .6; margin-left: 5px; }
+.bfilters select { -webkit-appearance: none; appearance: none; height: 34px; min-width: 0; max-width: 100%; padding: 0 30px 0 13px; border: 1px solid var(--line-2); border-radius: 999px; cursor: pointer;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23454b58' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") right 12px center / 10px no-repeat;
+  font: 500 13.5px Inter, system-ui, sans-serif; color: var(--ink); text-overflow: ellipsis; transition: border-color .2s; }
+.bfilters select:hover { border-color: var(--ink-3); }
+.bfilters select.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.bfilters .fsel.off { opacity: .4; }
+.bfilters select:disabled { cursor: not-allowed; }
+/* desktop: the select row never wraps (a wrap would push the cards past the screen); the selects shrink instead */
+@media (min-width: 961px) {
+  .bfilters .frow + .frow { flex-wrap: nowrap; }
+  .bfilters .frow + .frow .fsel { flex: 0 1 auto; }
+  .bfilters .frow + .frow select { min-width: 64px; }
+}
+.bfilters .freset { flex: none; border: 0; background: none; padding: 4px 2px; font-size: 13px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.bfilters .freset:hover { color: var(--ink); }
+
+/* rate tiles, compact; they appear with the filters, without the page's rise-in */
+#bench-stats { gap: 8px; margin: 0 0 12px; }
+#bench #bench-stats { opacity: 1 !important; transform: none !important; }
+#bench-stats .stat { padding: 6px 12px 7px; min-width: 0; border-radius: 12px; }
+#bench-stats .stat .v { font-size: 20px; line-height: 1.25; }
+#bench-stats .stat .l { font-size: 12px; line-height: 1.35; }
+#bench-stats .stat.wide { flex: 1 1 200px; display: flex; align-items: center; }
+
+/* the hint above the cards */
+.cards-hint { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 14px; font-weight: 550; line-height: 1.4; color: var(--ink); }
+.cards-hint .hplay { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; display: inline-grid; place-items: center; }
+.cards-hint .hplay svg { width: 10px; height: 10px; margin-left: 1px; }
+
+/* route cards: two rows of four; every poster carries a play button */
+#bench #cards { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; align-content: start; }
+#cards.turn > * { animation: benchFade .2s ease-out both; }
+@keyframes benchFade { from { opacity: 0; } }
+#cards .empty { grid-column: 1 / -1; margin: 0; padding: 28px 0; text-align: center; font-size: 14px; color: var(--ink-3); }
+#bench .rcard { border-radius: 14px; transition: border-color .15s, box-shadow .15s; }
+#bench .rcard:hover, #bench .rcard:focus-visible { transform: none; border-color: var(--ink); box-shadow: var(--shadow); }
+#bench .rcard .pics { grid-template-columns: 1.35fr 1fr; }
+.rcard .ph { position: relative; overflow: hidden; min-width: 0; }
+#bench .rcard .pics img { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; transition: filter .15s; }
+#bench .rcard:hover .pics img { filter: brightness(.82); }
+/* the mini top view fills its cell and never sets the row's height (the poster does) */
+.rcard .tv { position: relative; min-width: 0; background: #fafbfc; border-left: 1px solid var(--line); }
+#bench .rcard .tv canvas { position: absolute; inset: 0; width: 100%; height: 100%; border-left: 0; background: transparent; }
+.rcard .rplay { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; background: rgba(255, 255, 255, .95); color: #111318;
+  display: grid; place-items: center; box-shadow: 0 2px 12px rgba(0, 0, 0, .4); transition: transform .15s, background .15s, opacity .15s; }
+.rcard .rplay svg { width: 15px; height: 15px; margin-left: 2px; }
+.rcard:hover .rplay, .rcard:focus-visible .rplay { background: var(--wall); transform: scale(1.1); }
+/* the card's own clip (NoPeWorld, collision mode) over the poster, where the device allows autoplay (see bench.js); the play
+   button then steps back until the pointer is on the card */
+.rcard .ph video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .2s; }
+.rcard.live .ph video { opacity: 1; }
+.rcard .rtag { position: absolute; left: 5px; top: 5px; display: none; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 999px; background: rgba(12, 13, 16, .62);
+  color: #fff; font: 600 10px Inter, system-ui, sans-serif; letter-spacing: .01em; pointer-events: none; }
+.rcard .rtag i { width: 6px; height: 6px; border-radius: 50%; background: var(--ours); }
+#cards.autoplay .rcard.live .rtag { display: inline-flex; }
+#cards.autoplay .rcard.live .rplay { opacity: 0; transform: scale(.85); }
+#cards.autoplay .rcard.live:hover .rplay, #cards.autoplay .rcard.live:focus-visible .rplay { opacity: 1; transform: scale(1.1); }
+#bench .rcard:hover .ph video { filter: brightness(.82); }
+#bench .rcard .body { padding: 8px 10px 10px; gap: 1px; }
+#bench .rcard .t { font-size: 13.5px; line-height: 1.35; }
+#bench .rcard .s { font-size: 12px; line-height: 1.35; }
+#bench .rcard .v { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 8px; margin-top: 6px; }
+.rcard .v .who { font: 600 10.5px var(--mono); letter-spacing: .02em; text-transform: uppercase; }
+.rcard .v .who.raw { color: var(--raw); } .rcard .v .who.ours { color: var(--ours); }
+#bench .rcard .v .chip { display: inline-block; justify-self: start; max-width: 100%; height: 22px; line-height: 20px; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; }
+#bench .rcard .v .chip::before { display: inline-block; vertical-align: 1px; margin-right: 5px; }
+
+/* pager */
+.bench-pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; }
+.bench-pager .btn { height: 36px; padding: 0 16px; font-size: 14px; }
+.bench-pager .btn:hover { transform: none; }
+#pg-next:not(:disabled) { background: var(--ink); color: #fff; border-color: var(--ink); }
+.bench-pager .btn:disabled { opacity: .4; cursor: default; border-color: var(--line-2); }
+.pg-status { min-width: 160px; text-align: center; font: 500 13px var(--mono); color: var(--ink-3); }
+
+/* ---------- viewer: the play / pause state is plain to see */
+#v-play { width: 42px; height: 42px; background: var(--ink); border-color: var(--ink); color: #fff; }
+#v-play svg { width: 16px; height: 16px; }
+.vstate { min-width: 66px; font: 600 12.5px var(--mono); color: var(--ink-2); }
+.viewer.paused .vstate { color: var(--ink); }
+#v-tiles .tile { cursor: pointer; }
+.viewer.paused #v-tiles .tile:not(.missing) .play { display: grid; }
+
+/* ---------- narrower screens */
+@media (max-width: 900px) { #bench #cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .bfilters .frow { gap: 8px 14px; }
+  .bfilters .fgroup { flex-wrap: wrap; }
+  .bfilters .fsel { flex: 1 1 calc(50% - 8px); flex-direction: column; align-items: stretch; gap: 3px; }
+  .bfilters select { width: 100%; }
+  #bench .rcard .pics { grid-template-columns: minmax(0, 1fr); }
+  #bench .rcard .pics .tv { display: none; }
+  #bench .rcard .pics img { aspect-ratio: 16 / 9; }
+  #bench .rcard .v { grid-template-columns: minmax(0, 1fr); gap: 1px; }
+  .rcard .v .who { margin-top: 3px; }
+  .bench-pager { gap: 8px; }
+  .pg-status { min-width: 0; font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { #cards.turn > * { animation: none; } }
+@media print { .bfilters, .cards-hint, .bench-pager { display: none; } }

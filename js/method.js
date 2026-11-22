@@ -28,10 +28,16 @@ export function initMethodTour() {
   const fig = $('#method-fig'), spot = $('#method .mfig-spot'), cap = $('#mwalk .mw-cap'), btns = $$('#mwalk .mw-steps button');
   if (!fig || !spot || !btns.length) return;
   let i = 0, timer = 0, manual = false, visible = false;
+  // the figure itself is clickable: one large hotspot per part, same regions as the tour
+  const box = $('#method .mfig-a');
+  const hots = STEPS.map((st, j) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mfig-hot';
+    b.setAttribute('aria-label', btns[j].textContent.replace(/^\d/, '').trim()); b.addEventListener('click', () => { manual = true; clearTimeout(timer); go(j); }); box.append(b); return b; });
   const place = () => {
     const [x, y, w, hh] = STEPS[i].r;
     spot.style.left = (fig.offsetLeft + x * fig.offsetWidth) + 'px'; spot.style.top = (fig.offsetTop + y * fig.offsetHeight) + 'px';
     spot.style.width = (w * fig.offsetWidth) + 'px'; spot.style.height = (hh * fig.offsetHeight) + 'px';
+    STEPS.forEach((st, j) => { const [a, b2, c, d] = st.r, e = hots[j]; e.style.left = (fig.offsetLeft + a * fig.offsetWidth) + 'px'; e.style.top = (fig.offsetTop + b2 * fig.offsetHeight) + 'px';
+      e.style.width = (c * fig.offsetWidth) + 'px'; e.style.height = (d * fig.offsetHeight) + 'px'; e.classList.toggle('cur', j === i); });
   };
   const go = (k) => {
     i = k; place(); spot.classList.add('on');

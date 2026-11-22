@@ -38,7 +38,9 @@ export async function initCompare() {
     depth: makeTile(g, { label: 'External depth', dot: 'depth' }), ours: makeTile(g, { label: 'NoPeWorld', dot: 'ours' }) };
   Object.values(tiles).forEach(t => grid.append(t.root));
   const top = new TopView($('#cmp-top canvas'));
-  g.on((t) => top.setTime(t));
+  // at the moment of contact every tile flashes a thin yellow edge, once per pass (quiet: no movement)
+  let lastT = 0;
+  g.on((t) => { top.setTime(t); const ct = top.contactTime(); if (ct != null && lastT < ct && t >= ct && g.playing) for (const k in tiles) { const r = tiles[k].root; r.classList.remove('hit'); void r.offsetWidth; r.classList.add('hit'); } lastT = t; });
   wirePlayer(g, { button: $('#cmp-play'), scrub: $('#cmp-scrub'), time: $('#cmp-time'), labelFrames: true });
   $('#cmp-prev').addEventListener('click', () => g.step(-1)); $('#cmp-next').addEventListener('click', () => g.step(1));
   $$('#cmp-speed button').forEach(b => b.addEventListener('click', () => { $$('#cmp-speed button').forEach(x => x.setAttribute('aria-pressed', x === b)); g.setRate(+b.dataset.r); }));

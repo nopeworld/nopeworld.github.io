@@ -244,11 +244,11 @@
       <p class="lede">Before each chunk, a head under 2&thinsp;M parameters scores 34 candidate motions on the frozen DiT: a safe input is kept, an unsafe one becomes the closest safe motion.</p>
     </div>
     <figure class="mfig">
-      <a class="mfig-a" href="media/method/fig_arch_2400.webp" target="_blank" rel="noopener" aria-label="Open the method figure at full size">
+      <div class="mfig-a">
         <img id="method-fig" src="media/method/fig_arch_1080.webp" srcset="media/method/fig_arch_1080.webp 1080w, media/method/fig_arch_2400.webp 2401w"
           sizes="(min-width: 1180px) 1080px, calc(100vw - 48px)" width="2401" height="698" decoding="async" loading="lazy"
           alt="The paper's Figure 2. Left, training: Unreal Engine frames pass through the frozen DiT, a head reads its hidden states and predicts a score for every candidate motion; the targets come from sweeping each candidate through Unreal's true top-view map (green arrows safe, red unsafe), and a loss compares the two. Right, inference at chunk k with the W and left-arrow keys held: the frozen model alone runs DiT steps 0 to 3 and goes through the wall; in prediction mode the head reads the DiT states of chunk k minus 1 and keeps or changes the command before chunk k, and the video slides along the wall; in collision mode the head reads step 0 of chunk k, keeps the command or changes it and reruns step 0, then steps 1 to 3 follow, and the video slides along the wall."><span class="mfig-spot" aria-hidden="true"></span><span class="mfig-tag" aria-hidden="true">the paper's Fig.&nbsp;2</span>
-      </a>
+      <a class="mfig-full" href="media/method/fig_arch_2400.webp" target="_blank" rel="noopener">Full size ↗</a></div>
       <figcaption class="mwalk" id="mwalk">
         <span class="mw-steps" role="group" aria-label="Walk through the figure">
           <button type="button" data-s="0" aria-pressed="true"><i>1</i>Training</button><button type="button" data-s="1" aria-pressed="false"><i>2</i>Raw model</button><button type="button" data-s="2" aria-pressed="false"><i>3</i>Prediction mode</button><button type="button" data-s="3" aria-pressed="false"><i>4</i>Collision mode</button>
@@ -273,25 +273,35 @@
 
 <!-- ======================================================= BENCHMARK -->
 <section id="bench">
-  <div class="wrap">
-    <div class="head">
-      <span class="eyebrow"><span class="chap">04</span>NoPeBench</span>
-      <h2>NoPeBench: every route hits an obstacle.</h2>
-      <p class="lede">100 routes into solid obstacles, 50 open paths where stopping would be wrong, and 131 open-domain images, in three tasks.</p>
+  <!-- screen A: what NoPeBench is (head, every route's hand-off frame, the three tasks) -->
+  <div class="bench-a">
+    <div class="wrap">
+      <div class="head">
+        <span class="eyebrow"><span class="chap">04</span>NoPeBench</span>
+        <h2>NoPeBench: every route hits an obstacle.</h2>
+        <p class="lede">100 routes into solid obstacles, 50 open paths where stopping would be wrong, and 131 open-domain images, in three tasks.</p>
+      </div>
+    </div>
+    <div class="marquee" id="marquee" aria-hidden="true"><div class="mq-row" data-dir="1"></div></div>
+    <div class="wrap">
+      <div class="tasks">
+        <div class="task"><span class="tag">Task 1</span><h3>Decision</h3><p>Each chunk's choice on the true history: missed and false interventions.</p><div class="meta"><span class="chip plain">Missed</span><span class="chip plain">False</span><span class="chip plain">Score</span></div></div>
+        <div class="task"><span class="tag">Task 2</span><h3>Generated video</h3><p>Closed-loop rollouts, judged on Unreal's true 3D geometry.</p><div class="meta"><span class="chip plain">Violation</span><span class="chip plain">SIS</span><span class="chip plain">Slide</span></div></div>
+        <div class="task"><span class="tag">Task 3</span><h3>Open domain</h3><p>Single images with static or moving obstacles, judged by VLMs.</p><div class="meta"><span class="chip plain">Static</span><span class="chip plain">Dynamic</span><span class="chip plain">VLM judges</span></div></div>
+      </div>
     </div>
   </div>
-  <div class="marquee" id="marquee" aria-hidden="true"><div class="mq-row" data-dir="1"></div><div class="mq-row" data-dir="-1"></div></div>
-  <div class="wrap">
-    <div class="tasks">
-      <div class="task"><span class="tag">Task 1</span><h3>Decision</h3><p>Each chunk's choice on the true history: missed and false interventions.</p><div class="meta"><span class="chip plain">Missed</span><span class="chip plain">False</span><span class="chip plain">Score</span></div></div>
-      <div class="task"><span class="tag">Task 2</span><h3>Generated video</h3><p>Closed-loop rollouts, judged on Unreal's true 3D geometry.</p><div class="meta"><span class="chip plain">Violation</span><span class="chip plain">SIS</span><span class="chip plain">Slide</span></div></div>
-      <div class="task"><span class="tag">Task 3</span><h3>Open domain</h3><p>Single images with static or moving obstacles, judged by VLMs.</p><div class="meta"><span class="chip plain">Static</span><span class="chip plain">Dynamic</span><span class="chip plain">VLM judges</span></div></div>
+  <!-- screen B: explore it (filters, live rates, two rows of route cards with paging) -->
+  <div class="wrap bench-b" id="bench-explore">
+    <div class="subhead">
+      <h3>Every route, every verdict</h3>
+      <p>All 150 Task&nbsp;2 routes with the evaluator's verdict for every generator and method. <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the explorer">i</button><span class="info-pop" role="note">All 150 Task&nbsp;2 routes, unfiltered: the evaluator's verdict for every generator and method (VGGT-Ω, rule v3.1), the true map and every reconstructed camera path. Task&nbsp;1 runs on the same 100 collision routes, teacher-forced on Unreal's history, in 32 held-out scenes. Clips here are small previews (raw and collision mode; open paths: collision mode). A path whose history part misses the true history by more than 15&thinsp;cm is not drawn, as in the paper's figures (226 of 3,400).</span></span></p>
     </div>
-    <div class="filters" id="filters"></div>
+    <div class="bfilters" id="filters"></div>
     <div class="stats" id="bench-stats"></div>
+    <p class="cards-hint"><span class="hplay" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3v10l8-5z"/></svg></span>Click a route to play its videos.</p>
     <div class="cards" id="cards"></div>
-    <div class="more"><button class="btn" id="more">Show more routes</button>
-      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the explorer">i</button><span class="info-pop" role="note">All 150 Task&nbsp;2 routes, unfiltered: the evaluator's verdict for every generator and method (VGGT-Ω, rule v3.1), the true map and every reconstructed camera path. Task&nbsp;1 runs on the same 100 collision routes, teacher-forced on Unreal's history, in 32 held-out scenes. Clips here are small previews (raw and collision mode; open paths: collision mode). A path whose history part misses the true history by more than 15&thinsp;cm is not drawn, as in the paper's figures (226 of 3,400).</span></span></div>
+    <nav class="bench-pager" aria-label="Route pages"><button class="btn" id="pg-prev">&lsaquo; Prev</button><span class="pg-status" id="pg-status" aria-live="polite"></span><button class="btn" id="pg-next">Next &rsaquo;</button></nav>
   </div>
   <dialog class="viewer" id="viewer" aria-label="Route viewer">
     <div class="vhead"><h3 id="v-title">Route</h3><div class="seg" role="group" aria-label="Generator" id="v-gen"></div><button class="iconbtn" id="v-close" aria-label="Close"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg></button></div>
@@ -299,7 +309,7 @@
       <div class="vgrid">
         <div>
           <div class="vtiles" id="v-tiles"></div>
-          <div class="player" style="margin-top:10px"><button class="iconbtn" id="v-play" aria-label="Play"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg></button><div class="scrubwrap"><input type="range" id="v-scrub" min="0" max="1000" value="0" aria-label="Time"></div><span class="time mono small" id="v-time">0.00 s</span></div>
+          <div class="player" style="margin-top:10px"><button class="iconbtn" id="v-play" aria-label="Play"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg></button><span class="vstate" id="v-state" aria-live="polite">Paused</span><div class="scrubwrap"><input type="range" id="v-scrub" min="0" max="1000" value="0" aria-label="Time"></div><span class="time mono small" id="v-time">0.00 s</span></div>
           <p class="note" id="v-desc" style="margin-top:10px"></p>
         </div>
         <div><div class="topview" id="v-top"><canvas></canvas></div><div class="legend"><span><i class="dash"></i>input</span><span><i class="gt"></i>Unreal</span><span><i class="raw"></i>raw</span><span><i class="depth"></i>ext. depth</span><span><i class="ours"></i>Coll</span><span><i class="ours" style="opacity:.5"></i>Pred</span></div></div>

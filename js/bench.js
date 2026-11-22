@@ -1,56 +1,89 @@
-// NoPeBench explorer: all 150 Task 2 routes; filters; live violation rates on the filtered routes; cards with the hand-off
-// frame and a mini top view; a viewer with synced clips (Unreal, raw, collision mode), the top view of every method and
-// every generator's verdicts.
-import { $, $$, el, GEN, GEN_NAME, GEN_SHORT, getBench, getClips, chip, whenNear, METH_COLOR, reduceMotion } from './util.js';
+// NoPeBench in two screens. Screen A (static HTML): the head, one row of every route's hand-off frame, the three tasks.
+// Screen B: all 150 Task 2 routes; compact filters (generator and route set as buttons, the rest as selects); live
+// violation rates on the filtered routes; two rows of route cards at a time (hand-off frame with a play button, a mini top
+// view, the raw and NoPeWorld verdicts) with Prev / Next paging; a viewer that plays the route's synced clips (Unreal,
+// raw, collision mode) at once, with the top view of every method and every generator's verdicts.
+import { $, $$, el, clamp, GEN, GEN_NAME, GEN_SHORT, ICON, getBench, getClips, chip, whenNear, lowData, reduceMotion } from './util.js';
 import { SyncGroup, wirePlayer } from './sync.js';
 import { makeTile } from './tiles.js';
 import { TopView, loadTop, keysFor } from './topview.js';
 
-const PAGE = 24;
+const PAGE = 8;           // two rows of four on desktop (four rows of two on phones)
+// autoplay gate for the cards' clips: >= 4 cores, deviceMemory unknown or >= 4 GB, no Save-Data, no reduced motion, Low data off
+const autoplayOn = () => (navigator.hardwareConcurrency || 0) >= 4 && (navigator.deviceMemory == null || navigator.deviceMemory >= 4)
+  && !(navigator.connection && navigator.connection.saveData) && !reduceMotion && !lowData.on;
+const OUTCOMES = [['viol', 'violates'], ['back', 'goes back'], ['ok', 'stops'], ['slide', 'slides'], ['early', 'stops early'], ['idle', 'other']];
+const cap = (s) => s.replace(/^(a|an|the) /i, '').replace(/^./, c => c.toUpperCase());
+const nameOf = (r) => r.name ? cap(r.name) : (r.track === 'control' ? 'Open path' : r.obstacle);
+const sceneOf = (r) => r.scene.replace(/_/g, ' ');
 
 export async function initBench() {
   const B = await getBench(), C = await getClips();
   const cats = B.categories;
   const routes = B.routes;
-  // the marquee above the heading: every route's hand-off frame, two rows; a click opens that route
-  $$('#marquee .mq-row').forEach((row, k) => {
-    const half = routes.filter((_, i) => i % 2 === k), capm = (s) => s.replace(/^(a|an|the) /i, '').replace(/^./, c => c.toUpperCase());
-    for (let rep = 0; rep < 2; rep++) for (const r of half) row.append(el('button', { tabindex: '-1', 'data-name': `${r.name ? capm(r.name) : r.track === 'control' ? 'Open path' : r.obstacle} · ${r.scene.replace(/_/g, ' ')}`, onclick: () => openViewer(r) },
-      el('img', { src: `media/posters/${r.id}_s.webp`, alt: '', loading: 'lazy', decoding: 'async', width: 320, height: 180 })));
-  });
-  const st = { gen: 'lingbot', set: 'critical', obstacle: new Set(), input: new Set(), angle: new Set(), outcome: new Set(), shown: PAGE };
+  // ---------- screen A: one row of hand-off frames (twice, for the loop); a click opens that route
+  const mq = $('#marquee .mq-row');
+  if (mq) for (let rep = 0; rep < 2; rep++) for (const r of routes) mq.append(el('button', { tabindex: '-1', 'data-name': `${nameOf(r)} · ${sceneOf(r)}`, onclick: () => openViewer(r) },
+    el('img', { src: `media/posters/${r.id}_s.webp`, alt: '', loading: 'lazy', decoding: 'async', width: 320, height: 180 })));
+
+  // ---------- screen B: filters
+  const st = { gen: 'lingbot', set: 'critical', obstacle: '', input: '', angle: '', outcome: '', page: 0 };
   const F = $('#filters');
-  const count = (pred) => routes.filter(pred).length;
-  const row = (label, items, key, multi = true) => {
-    const r = el('div', { class: 'frow' }, el('span', { class: 'fl' }, label));
-    for (const [v, text, n] of items) {
-      const b = el('button', { class: 'fchip', 'aria-pressed': multi ? 'false' : String(st[key] === v), 'data-v': v }, text, n != null ? el('span', { class: 'n' }, n) : null);
-      b.addEventListener('click', () => {
-        if (multi) { st[key].has(v) ? st[key].delete(v) : st[key].add(v); b.setAttribute('aria-pressed', st[key].has(v)); }
-        else { st[key] = v; $$('.fchip', r).forEach(x => x.setAttribute('aria-pressed', x === b)); }
-        st.shown = PAGE; render();
-      });
-      r.append(b);
-    }
-    F.append(r);
-  };
-  row('Generator', GEN.map(g => [g, GEN_SHORT[g]]), 'gen', false);
-  row('Routes', [['critical', 'Into an obstacle', 100], ['control', 'Open path', 50]], 'set', false);
   const crit = routes.filter(r => r.track === 'critical');
   const uniq = (k) => [...new Set(crit.map(r => r[k]))];
-  row('Obstacle', uniq('obstacle').sort().map(o => [o, o, crit.filter(r => r.obstacle === o).length]), 'obstacle');
-  row('Input', uniq('input').map(o => [o, o.replace('turn', ' turn'), crit.filter(r => r.input === o).length]), 'input');
-  row('Approach', ['0–15°', '15–45°', '≥45°'].map(o => [o, o, crit.filter(r => r.angle === o).length]), 'angle');
-  row('NoPeWorld', [['viol', 'violates'], ['back', 'goes back'], ['ok', 'stops'], ['slide', 'slides'], ['early', 'stops early'], ['idle', 'other']], 'outcome');
-  const outcomeRow = F.lastChild;
-  const statsEl = $('#bench-stats'), cardsEl = $('#cards'), more = $('#more');
-  const cache = new Map(); let lastGen = null;
+  const seg = (label, id, key, items, showLabel = true) => {
+    const g = el('div', { class: 'seg', role: 'group', 'aria-label': label, id });
+    for (const [v, text, n] of items) g.append(el('button', { 'aria-pressed': String(st[key] === v), 'data-v': v, onclick: () => {
+      if (st[key] === v) return;
+      st[key] = v; $$('button', g).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v))); changed();
+    } }, text, n != null ? el('span', { class: 'n' }, n) : null));
+    return el('div', { class: 'fgroup' }, showLabel ? el('span', { class: 'fl' }, label) : null, g);
+  };
+  const sels = {};
+  const select = (label, id, key, items) => {
+    const s = el('select', { id }, el('option', { value: '' }, 'All'), ...items.map(([v, text, n]) => el('option', { value: v }, n != null ? `${text} (${n})` : text)));
+    s.addEventListener('change', () => { st[key] = s.value; changed(); });
+    sels[key] = s;
+    return el('label', { class: 'fsel' }, el('span', { class: 'fl' }, label), s);
+  };
+  const clear = el('button', { class: 'freset', type: 'button', hidden: true, onclick: () => { for (const k in sels) { sels[k].value = ''; st[k] = ''; } changed(); } }, 'Clear filters');
+  F.append(
+    el('div', { class: 'frow' },
+      seg('Generator', 'f-gen', 'gen', GEN.map(g => [g, GEN_SHORT[g]])),
+      seg('Routes', 'f-set', 'set', [['critical', 'Into an obstacle', 100], ['control', 'Open path', 50]], false)),
+    el('div', { class: 'frow' },
+      select('Obstacle', 'f-obstacle', 'obstacle', uniq('obstacle').sort().map(o => [o, o, crit.filter(r => r.obstacle === o).length])),
+      select('Input', 'f-input', 'input', uniq('input').map(o => [o, o.replace('turn', ' turn'), crit.filter(r => r.input === o).length])),
+      select('Approach', 'f-angle', 'angle', ['0–15°', '15–45°', '≥45°'].map(o => [o, o, crit.filter(r => r.angle === o).length])),
+      select('NoPeWorld', 'f-outcome', 'outcome', OUTCOMES),
+      clear));
+  const okOption = $('option[value="ok"]', sels.outcome);
+  function changed() {
+    // open paths have no obstacle, input template or approach angle of the critical set: those selects are cleared and off
+    const open = st.set === 'control';
+    for (const k of ['obstacle', 'input', 'angle']) { if (open) { sels[k].value = ''; st[k] = ''; } sels[k].disabled = open; sels[k].closest('.fsel').classList.toggle('off', open); }
+    okOption.textContent = open ? 'follows the input' : 'stops';
+    for (const k in sels) sels[k].classList.toggle('on', !!st[k]);
+    clear.hidden = !Object.keys(sels).some(k => st[k]);
+    st.page = 0; render();
+  }
+
+  // ---------- rates, cards, pager
+  const statsEl = $('#bench-stats'), cardsEl = $('#cards'), prev = $('#pg-prev'), next = $('#pg-next'), status = $('#pg-status');
+  const cache = new Map();
   const filtered = () => routes.filter(r => r.track === st.set
-    && (!st.obstacle.size || st.obstacle.has(r.obstacle)) && (!st.input.size || st.input.has(r.input)) && (!st.angle.size || st.angle.has(r.angle))
-    && (!st.outcome.size || (r.res[st.gen].collision && st.outcome.has(cats[r.res[st.gen].collision[0]].group))));
+    && (!st.obstacle || st.obstacle === r.obstacle) && (!st.input || st.input === r.input) && (!st.angle || st.angle === r.angle)
+    && (!st.outcome || (r.res[st.gen].collision && st.outcome === cats[r.res[st.gen].collision[0]].group)));
   const rate = (rs, m) => { const v = rs.map(r => r.res[st.gen][m]).filter(Boolean); return v.length ? [Math.round(100 * v.filter(x => x[1]).length / v.length), v.length] : null; };
+  let reserved = 0;
+  const reserve = () => {   // the grid keeps the height of a full page, so the pager stays under the pointer on a short last page
+    const c = cardsEl.querySelector('.rcard'); if (!c) return;
+    const cols = getComputedStyle(cardsEl).gridTemplateColumns.split(' ').length || 1, rows = Math.ceil(PAGE / cols);
+    const gap = parseFloat(getComputedStyle(cardsEl).rowGap) || 0;
+    reserved = Math.ceil(rows * c.getBoundingClientRect().height + (rows - 1) * gap);
+    cardsEl.style.minHeight = reserved + 'px';
+  };
   function render() {
-    for (const r of $$('.frow', F)) if (r !== outcomeRow && r !== F.firstChild && r !== F.children[1]) r.style.opacity = st.set === 'control' ? .45 : 1;
     const rs = filtered();
     statsEl.innerHTML = '';
     statsEl.append(el('div', { class: 'stat' }, el('div', { class: 'v' }, String(rs.length)), el('div', { class: 'l' }, 'routes')));
@@ -58,51 +91,114 @@ export async function initBench() {
       const v = rate(rs, m); if (!v) continue;
       statsEl.append(el('div', { class: `stat ${cls}` }, el('div', { class: 'v' }, `${v[0]}%`), el('div', { class: 'l' }, `violate · ${name}`)));
     }
-    statsEl.append(el('div', { class: 'stat wide', style: { flex: 1, minWidth: '200px' }, title: "Task 2 evaluator verdicts on the routes shown. With no filter the rates equal the paper's table." },
+    statsEl.append(el('div', { class: 'stat wide', title: "Task 2 evaluator verdicts on the routes shown. With no filter the rates equal the paper's table." },
       el('div', { class: 'l' }, `${GEN_NAME[st.gen]} · verdicts on the routes shown`)));
-    // cards are kept per route and generator, so a filter change can move them (FLIP) instead of rebuilding them
-    const gs = window.gsap, F2 = window.Flip, animate = gs && F2 && !reduceMotion && lastGen === st.gen && cardsEl.childElementCount;
-    const state = animate ? F2.getState(cardsEl.children) : null;
-    const list = rs.slice(0, st.shown).map(r => { const k = `${r.id}|${st.gen}`; if (!cache.has(k)) cache.set(k, card(r)); return cache.get(k); });
-    cardsEl.replaceChildren(...list);
-    if (state) F2.from(state, { duration: .6, ease: 'power3.inOut', absolute: true, onEnter: (els) => gs.fromTo(els, { opacity: 0, scale: .92 }, { opacity: 1, scale: 1, duration: .45, ease: 'power2.out' }) });
-    else if (gs && !reduceMotion && lastGen != null) gs.fromTo(list.slice(0, 16), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: .5, stagger: .02, ease: 'power2.out', clearProps: 'transform' });
-    lastGen = st.gen;
-    more.hidden = rs.length <= st.shown;
-    more.textContent = `Show more routes (${rs.length - st.shown} left)`;
+    const pages = Math.max(1, Math.ceil(rs.length / PAGE));
+    st.page = clamp(st.page, 0, pages - 1);
+    const a = st.page * PAGE, shown = rs.slice(a, a + PAGE);
+    const list = shown.map(r => { const k = `${r.id}|${st.gen}`; if (!cache.has(k)) cache.set(k, card(r)); return cache.get(k); });
+    for (const c of onPage) if (!list.includes(c)) clipOff(c, true);
+    onPage = list;
+    cardsEl.replaceChildren(...(list.length ? list : [el('p', { class: 'empty' }, 'No route matches these filters.')]));
+    list.forEach(c => c._map());
+    watch();
+    cardsEl.classList.remove('turn'); void cardsEl.offsetWidth; cardsEl.classList.add('turn');     // a short fade, nothing moves
+    status.textContent = rs.length ? `Routes ${a + 1}–${a + shown.length} of ${rs.length}` : 'No routes';
+    prev.disabled = st.page === 0; next.disabled = st.page >= pages - 1;
+    const left = rs.length - (a + PAGE);
+    next.innerHTML = left > 0 ? `Next ${Math.min(PAGE, left)} &rsaquo;` : 'Next &rsaquo;';
+    if (list.length === PAGE || !reserved) reserve();
   }
-  more.addEventListener('click', () => { st.shown += PAGE; render(); });
+  const turn = (d) => {
+    st.page += d; render();
+    const top = cardsEl.getBoundingClientRect().top;       // phones: a page taller than the screen starts at its first card
+    if (top < 70) window.scrollBy(0, top - 80);
+  };
+  prev.addEventListener('click', () => turn(-1));
+  next.addEventListener('click', () => turn(1));
+  // ---------- card clips: muted, inline, looping; fetched when a card first comes on screen, playing only while it is on
+  // screen and no viewer is open. Only the cards of the current page exist, so at most one page (8 clips, 320 x 178) plays.
+  let onPage = [];
+  const hint = $('.cards-hint');
+  const clipOn = (c) => {
+    const v = c._clip; if (!v || !autoplayOn() || $('#viewer').open) return;
+    if (!v.getAttribute('src')) { v.src = v.dataset.src; }
+    v.play().catch(() => {});
+  };
+  const clipOff = (c, unload) => {
+    const v = c._clip; if (!v) return;
+    v.pause();
+    if (unload && v.getAttribute('src')) { vio?.unobserve(v); v.removeAttribute('src'); v.load(); c.classList.remove('live'); }
+  };
+  const vio = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach(e => {
+    const c = e.target.closest('.rcard'); if (c) e.isIntersecting ? clipOn(c) : clipOff(c);
+  }), { threshold: 0.35 }) : null;
+  const watch = () => {                // (re)observe the page's clips: observing reports the current visibility at once
+    const on = autoplayOn();
+    if (hint) hint.lastChild.textContent = on ? 'Click a route to open all its clips and the top view.' : 'Click a route to play its videos.';
+    cardsEl.classList.toggle('autoplay', on);
+    for (const c of onPage) if (c._clip && vio) { vio.unobserve(c._clip); if (on) vio.observe(c._clip); }
+  };
+  lowData.listen((on) => { if (on) onPage.forEach(c => clipOff(c, true)); watch(); });
+  const pauseCards = () => onPage.forEach(c => clipOff(c));
+  let rz = 0; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { cardsEl.style.minHeight = ''; reserved = 0; reserve(); onPage.forEach(c => c._map()); }, 150); });
+
   function card(r) {
-    const cv = el('canvas');
-    const raw = r.res[st.gen].raw, col = r.res[st.gen].collision;
-    const b = el('button', { class: 'rcard', 'aria-label': `Open route ${r.id}` },
-      el('div', { class: 'pics' }, el('img', { src: `media/posters/${r.id}_s.webp`, alt: '', loading: 'lazy', decoding: 'async', width: 320, height: 180 }), cv),
-      el('div', { class: 'body' }, el('div', { class: 't' }, r.name ? cap(r.name) : (r.track === 'control' ? 'Open path' : r.obstacle)),
-        el('div', { class: 's' }, `${r.scene.replace(/_/g, ' ')} · ${r.track === 'control' ? r.template : `${r.input} · ${r.angle}`}`),
-        el('div', { class: 'v' }, raw ? chip(raw[0], cats, '') : null, col ? chip(col[0], cats, '') : null)));
-    if (raw) b.querySelector('.v').firstChild.title = 'raw model: ' + raw[0];
-    if (col) b.querySelector('.v').lastChild.title = 'NoPeWorld (Coll): ' + col[0];
+    const cv = el('canvas', { 'aria-hidden': 'true' }), gen = st.gen;
+    const v = r.res[gen], raw = v.raw, col = v.collision;
+    const verdict = (who, cls, q, name) => {
+      if (!q) return [];
+      const c = chip(q[0], cats, ''); c.title = `${name}: ${q[0]}`;
+      return [el('span', { class: `who ${cls}` }, who), c];
+    };
+    const cid = `${r.id}__${gen}__collision`, cres = C[cid]?.lo ? 'lo' : C[cid]?.hi ? 'hi' : null;
+    const clip = cres ? el('video', { preload: 'none', loop: true, muted: true, playsinline: true, disablepictureinpicture: true, 'aria-hidden': 'true', 'data-src': `media/${cres}/${cid}.mp4` }) : null;
+    if (clip) { clip.muted = true; clip.playsInline = true; clip.addEventListener('playing', () => b.classList.add('live')); }
+    const b = el('button', { class: 'rcard', type: 'button', 'aria-label': `Play route ${r.id}: ${nameOf(r)}, ${sceneOf(r)}` },
+      el('div', { class: 'pics' },
+        el('div', { class: 'ph' }, el('img', { src: `media/posters/${r.id}_s.webp`, alt: '', loading: 'lazy', decoding: 'async', width: 320, height: 180 }),
+          clip, clip ? el('span', { class: 'rtag', 'aria-hidden': 'true' }, el('i'), 'NoPeWorld') : null,
+          el('span', { class: 'rplay', 'aria-hidden': 'true', html: ICON.play })),
+        el('div', { class: 'tv' }, cv)),
+      el('div', { class: 'body' }, el('div', { class: 't' }, nameOf(r)),
+        el('div', { class: 's' }, `${sceneOf(r)} · ${r.track === 'control' ? r.template : `${r.input} · ${r.angle}`}`),
+        el('div', { class: 'v' }, ...verdict('Raw', 'raw', raw, 'raw model'), ...verdict('NoPeWorld', 'ours', col, 'NoPeWorld (Coll)'))));
+    b._clip = clip;
     b.addEventListener('click', () => openViewer(r));
-    whenNear(cv, async () => { const d = await loadTop(r.id); const tv = new TopView(cv, { mini: true }); tv.set(d, keysFor(st.gen, ['raw', 'collision'], { width: 1.6 })); }, '200px');
+    // the mini top view is drawn only on a card that is on the page with a laid-out box (a map that arrives after its card
+    // left the page waits until the card is back: render() calls _map again)
+    let data = null, tv = null;
+    b._map = () => {
+      if (!data || tv || !cv.isConnected || !cv.getBoundingClientRect().width) return;
+      tv = new TopView(cv, { mini: true }); tv.set(data, keysFor(gen, ['raw', 'collision'], { width: 1.6 }));
+    };
+    whenNear(cv, async () => { data = await loadTop(r.id); b._map(); }, '200px');
     return b;
   }
-  const cap = (s) => s.replace(/^(a|an|the) /i, '').replace(/^./, c => c.toUpperCase());
   render();
 
-  // ---------- viewer
+  // ---------- viewer: plays as soon as it opens; a click on a clip pauses or resumes, a paused clip shows a big play button
   const dlg = $('#viewer'), g = new SyncGroup({ fps: 16 });
   const tiles = [makeTile(g, { label: 'Unreal (ground truth)', dot: 'unreal' }), makeTile(g, { label: 'Raw', dot: 'raw' }), makeTile(g, { label: 'NoPeWorld (Coll)', dot: 'ours' })];
   tiles.forEach(t => $('#v-tiles').append(t.root));
+  $('#v-tiles').addEventListener('click', (e) => { if (!e.target.closest('.play')) g.toggle(); });
   const top = new TopView($('#v-top canvas'));
   g.on((t) => top.setTime(t));
   const setPlay = wirePlayer(g, { button: $('#v-play'), scrub: $('#v-scrub'), time: $('#v-time') });
-  let cur = null, vgen = st.gen;
+  const stateEl = $('#v-state'); let shownState = '';
+  g.on(() => {
+    const live = g.live(), wait = g.playing && live.some(it => it.video.readyState < 3 && !it.video.ended);
+    const s = !g.playing ? 'Paused' : wait ? 'Loading…' : 'Playing';
+    if (s === shownState) return;
+    shownState = s; stateEl.textContent = s; dlg.classList.toggle('paused', s === 'Paused');
+  });
+  let cur = null, vgen = st.gen, token = 0;
   const vg = $('#v-gen');
   GEN.forEach(x => vg.append(el('button', { 'aria-pressed': 'false', 'data-g': x, onclick: () => { vgen = x; fill(); } }, GEN_SHORT[x])));
   async function fill() {
-    const r = cur;
+    const r = cur, my = ++token;
     $$('button', vg).forEach(b => b.setAttribute('aria-pressed', b.dataset.g === vgen));
-    $('#v-title').textContent = `${r.scene.replace(/_/g, ' ')} · ${r.name ? cap(r.name) : 'open path'}`;
+    $('#v-title').textContent = `${sceneOf(r)} · ${r.name ? cap(r.name) : 'open path'}`;
     const id0 = `${r.id}__unreal`, id1 = `${r.id}__${vgen}__raw`, id2 = `${r.id}__${vgen}__collision`;
     const res = (id) => C[id]?.lo ? 'lo' : C[id]?.hi ? 'hi' : null;
     tiles[0].setClip(C[id0] ? id0 : null, res(id0), `media/posters/${r.id}_s.webp`, false);
@@ -112,10 +208,6 @@ export async function initBench() {
     const v = r.res[vgen];
     tiles[1].setVerdict(v.raw ? chip(v.raw[0], cats) : null); tiles[2].setVerdict(v.collision ? chip(v.collision[0], cats) : null);
     tiles[1].setLabel(`${GEN_SHORT[vgen]} · raw`, 'raw'); tiles[2].setLabel(`${GEN_SHORT[vgen]} · NoPeWorld (Coll)`, 'ours');
-    const d = await loadTop(r.id);
-    top.set(d, keysFor(vgen, ['raw', 'depth', 'collision', 'prediction']));
-    const dropped = Object.keys(d.dropped).filter(k => k.startsWith(vgen + '|'));
-    $('#v-desc').textContent = `${r.track === 'control' ? 'Open path: nothing blocks the input for its whole length.' : `Input ${r.input} into ${r.name || r.obstacle}, approach ${r.angle}; Unreal ${r.cls === 'slide' ? 'slides along the obstacle' : 'stops at the obstacle'}.`} Clips: 320-px previews of the judged videos.` + (dropped.length ? ` Not drawn on the map (history misfit > 15 cm): ${dropped.map(k => k.split('|')[1]).join(', ')}.` : '');
     // verdict table: every generator x method
     const T = $('#v-table'); T.innerHTML = '';
     const ms = ['raw', 'depth', 'collision', 'prediction'];
@@ -124,11 +216,24 @@ export async function initBench() {
     for (const x of GEN) tb.append(el('tr', { class: x === vgen ? 'sel' : '' }, el('td', {}, GEN_NAME[x]),
       ...ms.map(m => { const q = r.res[x][m]; return el('td', {}, q ? chip(q[0], cats, q[3] != null && q[0] === 'slid' ? ` ${q[3]} m` : '') : el('span', { class: 'small' }, '–')); })));
     T.append(tb);
+    const base = `${r.track === 'control' ? 'Open path: nothing blocks the input for its whole length.' : `Input ${r.input} into ${r.name || r.obstacle}, approach ${r.angle}; Unreal ${r.cls === 'slide' ? 'slides along the obstacle' : 'stops at the obstacle'}.`} Clips: 320-px previews of the judged videos.`;
+    $('#v-desc').textContent = base;
+    // the clips start now; the map follows when its file is in
     g.seek(0); g.play(true); setTimeout(setPlay, 50);
+    const d = await loadTop(r.id);
+    if (my !== token) return;
+    top.set(d, keysFor(vgen, ['raw', 'depth', 'collision', 'prediction'])); top.setTime(g.time);
+    const dropped = Object.keys(d.dropped).filter(k => k.startsWith(vgen + '|'));
+    if (dropped.length) $('#v-desc').textContent = base + ` Not drawn on the map (history misfit > 15 cm): ${dropped.map(k => k.split('|')[1]).join(', ')}.`;
   }
-  function openViewer(r) { cur = r; vgen = st.gen; if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', ''); fill(); }
+  function openViewer(r) {
+    if (cur !== r) { top.d = null; top.ctx.clearRect(0, 0, top.c.width, top.c.height); }      // no old map under the new clips
+    cur = r; vgen = st.gen;
+    if (typeof dlg.showModal === 'function') { if (!dlg.open) dlg.showModal(); } else dlg.setAttribute('open', '');
+    pauseCards(); fill();
+  }
   const close = () => { g.pause(true); if (dlg.open) dlg.close(); };
   $('#v-close').addEventListener('click', close);
-  dlg.addEventListener('close', () => g.pause(true));
+  dlg.addEventListener('close', () => { g.pause(true); watch(); });
   dlg.addEventListener('click', (e) => { if (e.target === dlg) close(); });
 }
