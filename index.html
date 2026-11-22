@@ -40,6 +40,7 @@
 <link rel="modulepreload" href="js/knows.js">
 <link rel="modulepreload" href="js/method.js">
 <link rel="modulepreload" href="js/bench.js">
+<link rel="modulepreload" href="js/taskpanel.js">
 <link rel="modulepreload" href="js/results.js">
 <link rel="modulepreload" href="js/barchart.js">
 <link rel="modulepreload" href="js/dotplot.js">
@@ -295,7 +296,7 @@
         </div>
       </div>
       <div class="fanbox">
-        <svg id="fan" viewBox="0 0 400 300" role="img" aria-label="The 34 candidate motions, coloured by the head's safety estimate"></svg>
+        <svg id="fan" viewBox="0 0 400 300" role="img" aria-label="The 34 candidate motions, colored by the head's safety estimate"></svg>
         <div class="pstrip" id="pstrip" aria-hidden="true"></div>
         <div class="readout" id="fan-read">Press play.</div>
         <div class="legend" style="margin-top:0"><span><i style="background:#8fd1ad;height:8px;width:10px"></i>safe</span><span><i style="background:#f0a59c;height:8px;width:10px"></i>unsafe</span><span><i style="background:var(--ink);height:8px;width:10px"></i>chosen</span><span><i class="dash"></i>input</span></div>
@@ -359,9 +360,10 @@
     <div class="marquee" id="marquee" aria-hidden="true"><div class="mq-row" data-dir="1"></div><div class="mq-row" data-dir="-1"></div></div>
     <div class="wrap">
       <div class="tasks">
-        <div class="task"><span class="tag">Task 1</span><h3>Decision</h3><p>Each chunk's choice on the true history: missed and false interventions.</p><div class="meta"><span class="chip plain">Missed</span><span class="chip plain">False</span><span class="chip plain">Score</span></div></div>
-        <div class="task"><span class="tag">Task 2</span><h3>Generated video</h3><p>Closed-loop rollouts, judged on Unreal's true 3D geometry.</p><div class="meta"><span class="chip plain">Violation</span><span class="chip plain">SIS</span><span class="chip plain">Slide</span></div></div>
-        <div class="task"><span class="tag">Task 3</span><h3>Open domain</h3><p>Single images with static or moving obstacles, judged by VLMs.</p><div class="meta"><span class="chip plain">Static</span><span class="chip plain">Dynamic</span><span class="chip plain">VLM judges</span></div></div>
+        <!-- each card opens its task's panel (#taskpanel); a metric chip opens it at that metric's definition (js/taskpanel.js) -->
+        <div class="task" data-task="1"><span class="tag">Task 1</span><span class="task-go" aria-hidden="true">Details<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5 10.5 8 6 12.5"/></svg></span><h3><button class="task-open" type="button" data-task="1" aria-haspopup="dialog" aria-controls="taskpanel" aria-label="Task 1, Decision: inputs, what is tested, how it is scored">Decision</button></h3><p>Evaluates whether the model corrects unsafe actions while preserving safe ones.</p><div class="meta"><button type="button" class="chip plain tchip" data-task="1" data-metric="missed" aria-haspopup="dialog" aria-label="Missed: definition">Missed</button><button type="button" class="chip plain tchip" data-task="1" data-metric="false" aria-haspopup="dialog" aria-label="False: definition">False</button><button type="button" class="chip plain tchip" data-task="1" data-metric="score" aria-haspopup="dialog" aria-label="Decision score: definition">Score</button></div></div>
+        <div class="task" data-task="2"><span class="tag">Task 2</span><span class="task-go" aria-hidden="true">Details<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5 10.5 8 6 12.5"/></svg></span><h3><button class="task-open" type="button" data-task="2" aria-haspopup="dialog" aria-controls="taskpanel" aria-label="Task 2, Generated Video: inputs, what is tested, how it is scored">Generated Video</button></h3><p>Evaluates whether generated videos avoid obstacles while preserving intended motion.</p><div class="meta"><button type="button" class="chip plain tchip" data-task="2" data-metric="violation" aria-haspopup="dialog" aria-label="Violation: definition">Violation</button><button type="button" class="chip plain tchip" data-task="2" data-metric="sis" aria-haspopup="dialog" aria-label="SIS: definition">SIS</button><button type="button" class="chip plain tchip" data-task="2" data-metric="slide" aria-haspopup="dialog" aria-label="Slide: definition">Slide</button></div></div>
+        <div class="task" data-task="3"><span class="tag">Task 3</span><span class="task-go" aria-hidden="true">Details<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5 10.5 8 6 12.5"/></svg></span><h3><button class="task-open" type="button" data-task="3" aria-haspopup="dialog" aria-controls="taskpanel" aria-label="Task 3, Open Domain: inputs, what is tested, how it is scored">Open Domain</button></h3><p>Evaluates whether the model avoids static and moving obstacles in unseen scenes.</p><div class="meta"><button type="button" class="chip plain tchip" data-task="3" data-metric="static" aria-haspopup="dialog" aria-label="Static: definition">Static</button><button type="button" class="chip plain tchip" data-task="3" data-metric="dynamic" aria-haspopup="dialog" aria-label="Dynamic: definition">Dynamic</button><button type="button" class="chip plain tchip" data-task="3" data-metric="judges" aria-haspopup="dialog" aria-label="VLM Judges: definition">VLM Judges</button></div></div>
       </div>
     </div>
   </div>
@@ -389,6 +391,186 @@
         <div><div class="topview" id="v-top"><canvas></canvas></div><div class="legend"><span><i class="dash"></i>input</span><span><i class="gt"></i>Unreal</span><span><i class="raw"></i>raw</span><span><i class="depth"></i>ext. depth</span><span><i class="ours"></i>Coll</span><span><i class="ours" style="opacity:.5"></i>Pred</span></div></div>
       </div>
       <div class="tablewrap"><table class="vtable" id="v-table"></table></div>
+    </div>
+  </dialog>
+  <!-- the task panel: what goes in and comes out, what is tested, how it is scored (the paper, Secs. 4.1-4.2 and S1.3-S1.4),
+       one real case. The text is static; js/taskpanel.js builds the cases on first open and plays their clips only while open. -->
+  <dialog class="tpanel" id="taskpanel" aria-labelledby="tp-title">
+    <div class="tp-head">
+      <span class="tag" id="tp-tag">Task 1</span>
+      <h3 id="tp-title" tabindex="-1">Decision on the true history</h3>
+      <div class="tp-tabs" role="tablist" aria-label="Tasks">
+        <button type="button" role="tab" id="tp-tab-1" data-task="1" aria-controls="tp-1" aria-selected="true">Task 1</button>
+        <button type="button" role="tab" id="tp-tab-2" data-task="2" aria-controls="tp-2" aria-selected="false" tabindex="-1">Task 2</button>
+        <button type="button" role="tab" id="tp-tab-3" data-task="3" aria-controls="tp-3" aria-selected="false" tabindex="-1">Task 3</button>
+      </div>
+      <button type="button" class="iconbtn" id="tp-close" aria-label="Close"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+    </div>
+
+    <!-- Task 1 -->
+    <div class="tp-task" id="tp-1" data-task="1" data-title="Decision on the true history" role="tabpanel" aria-labelledby="tp-tab-1">
+      <div class="tp-col">
+        <section class="tp-sec tp-io" aria-labelledby="tp1-h1">
+          <h4 id="tp1-h1"><span class="n">1</span>Input → output</h4>
+          <div class="tp-strip">
+            <figure class="tp-node"><div class="tp-pic"><img data-src="media/posters/CourtYard__n017_s.webp" alt="Hand-off frame of a CourtYard route" width="384" height="216"><kbd class="tp-key">W+A</kbd></div>
+              <figcaption><b>True history</b> Unreal's real continuation, replayed by teacher forcing, with the held command</figcaption></figure>
+            <span class="tp-arrow" aria-hidden="true"></span>
+            <figure class="tp-node tp-box"><div class="tp-pic tp-model"><span>World model<br>+ method</span></div>
+              <figcaption><b>Every chunk</b> on the world model's own chunk grid</figcaption></figure>
+            <span class="tp-arrow" aria-hidden="true"></span>
+            <figure class="tp-node"><div class="tp-pic tp-out"><span class="chip ok">keep <i>a*<sub>k</sub> = u<sub>k</sub></i></span><span class="chip viol">change <i>a*<sub>k</sub> ≠ u<sub>k</sub></i></span></div>
+              <figcaption><b>Output</b> the motion <i>a*<sub>k</sub></i> the method would send, at every chunk</figcaption></figure>
+          </div>
+        </section>
+        <section class="tp-sec tp-ex" aria-labelledby="tp1-h4">
+          <h4 id="tp1-h4"><span class="n">4</span>One real example</h4>
+          <p class="tp-case">CourtYard · a plastered building wall · W+A · LingBot-World 2.0 + NoPeWorld (Coll)</p>
+          <div class="tp-decs" id="tp1-decs"></div>
+          <div class="legend tp-legend"><span><i class="cand safe"></i>safe candidate</span><span><i class="cand unsafe"></i>unsafe candidate</span><span><i class="dash"></i>input and its swept disc</span><span><i class="pick"></i>head's choice</span><span><i class="gt"></i>Unreal's path</span><span><i class="wall"></i>obstacle</span></div>
+          <p class="note">Candidates colored by the label rule on Unreal's map, computed in this page. The head's choices come from the closed-loop run. Chunk 1 sees only true frames. Chunk 2 follows one generated chunk.</p>
+        </section>
+      </div>
+      <div class="tp-col">
+        <section class="tp-sec tp-test" aria-labelledby="tp1-h2">
+          <h4 id="tp1-h2"><span class="n">2</span>What is tested</h4>
+          <p>Whether a method keeps safe commands and corrects unsafe ones, free of generation drift. Every candidate is labeled on Unreal's occupancy map as in training: a disc of <i>r</i>&nbsp;=&nbsp;0.25&nbsp;m swept along it must keep a margin <i>m</i>&nbsp;=&nbsp;5&nbsp;cm.</p>
+          <p class="tp-scope">100 collision routes in 32 held-out UnrealZoo scenes.</p>
+        </section>
+        <section class="tp-sec tp-score" aria-labelledby="tp1-h3">
+          <h4 id="tp1-h3"><span class="n">3</span>How it is scored</h4>
+          <div class="tp-m tp-label" id="tp-m-label" tabindex="-1">
+            <div class="tp-mn">Label of candidate <i>i</i></div>
+            <div class="tp-f"><i>P<sub>i</sub></i> = Φ((<i>g<sub>i</sub></i> − <i>m</i>) / 0.03&nbsp;m), &nbsp;<i>A<sub>i</sub></i> = exp(−<i>ε<sub>i</sub></i><sup>2</sup> / 2<i>s</i><sup>2</sup>), &nbsp;<i>s</i> = 0.5, &nbsp;<i>R<sub>i</sub></i> = <i>P<sub>i</sub></i>·<i>A<sub>i</sub></i></div>
+            <p><i>g<sub>i</sub></i> is the swept clearance. <i>ε<sub>i</sub></i> is the distance from Unreal's collide-and-slide response to the input. The 34 candidates are the input <i>c</i><sub>0</sub>&nbsp;=&nbsp;<i>u<sub>k</sub></i>, a stop, shortened steps and turns up to 90°.</p>
+          </div>
+          <div class="tp-m" id="tp-m-missed" tabindex="-1">
+            <div class="tp-mn">Missed <span class="dir">↓</span></div>
+            <p>Share of unsafe inputs (<i>P</i><sub>0</sub>&nbsp;&lt;&nbsp;0.5) that are kept.</p>
+          </div>
+          <div class="tp-m" id="tp-m-false" tabindex="-1">
+            <div class="tp-mn">False <span class="dir">↓</span></div>
+            <p>Share of safe inputs that are changed.</p>
+          </div>
+          <div class="tp-m" id="tp-m-score" tabindex="-1">
+            <div class="tp-mn">Decision score <span class="dir">↑</span></div>
+            <div class="tp-f">100 · (1 − regret), &nbsp;regret = max<sub><i>i</i></sub> <i>R<sub>i</sub></i> − <i>R<sub>c</sub></i></div>
+            <p><i>c</i> is the chosen motion. The score is 100 at the reward-optimal motion.</p>
+          </div>
+          <p class="note tp-foot">The raw model misses 100% and changes 0%. Scores are compared within each world model: a label looks one chunk ahead, so it depends on the chunk length.</p>
+        </section>
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="tp-task" id="tp-2" data-task="2" data-title="Generated video, in closed loop" role="tabpanel" aria-labelledby="tp-tab-2" hidden>
+      <div class="tp-col">
+        <section class="tp-sec tp-io" aria-labelledby="tp2-h1">
+          <h4 id="tp2-h1"><span class="n">1</span>Input → output</h4>
+          <div class="tp-strip">
+            <figure class="tp-node"><div class="tp-pic"><img data-src="media/posters/Hospital__n002_s.webp" alt="Hand-off frame of a Hospital route" width="384" height="216"><kbd class="tp-key">W · 5 s</kbd></div>
+              <figcaption><b>True frames</b> up to a pre-contact hand-off: about 1 s before contact on 49 routes, 0.5–3 s on the other 51</figcaption></figure>
+            <span class="tp-arrow" aria-hidden="true"></span>
+            <figure class="tp-node tp-box"><div class="tp-pic tp-model"><span>World model<br>+ method</span></div>
+              <figcaption><b>In the loop</b> 5 s of a held W, W+A or W+D at 1.2 m/s walking, 4 m/s for drones, 5 m/s for cars</figcaption></figure>
+            <span class="tp-arrow" aria-hidden="true"></span>
+            <figure class="tp-node"><div class="tp-pic"><canvas class="tp-mirror" id="tp2-mirror" aria-hidden="true"></canvas></div>
+              <figcaption><b>Output</b> the generated video, judged on Unreal's 3D geometry</figcaption></figure>
+          </div>
+        </section>
+        <section class="tp-sec tp-ex" aria-labelledby="tp2-h4">
+          <h4 id="tp2-h4"><span class="n">4</span>One real example</h4>
+          <p class="tp-case">Hospital · a corridor wall · W · LingBot-World 2.0</p>
+          <div class="tp-tiles" id="tp2-tiles"></div>
+          <div class="tp-player"><button type="button" class="iconbtn" id="tp2-play" aria-label="Play"></button><span class="time mono small" id="tp2-time">0.00 s</span></div>
+          <div class="topview tp-top"><canvas id="tp2-top"></canvas></div>
+          <div class="legend"><span><i class="dash"></i>input</span><span><i class="gt"></i>Unreal</span><span><i class="raw"></i>raw</span><span><i class="ours"></i>NoPeWorld (Coll)</span><span><i class="wall"></i>obstacle</span></div>
+          <p class="note">LingBot-World 2.0's best slide, as in Compare. Top view: each video's camera path, reconstructed by VGGT-Ω, on Unreal's true map. Clips: 320-px previews of the judged videos.</p>
+        </section>
+      </div>
+      <div class="tp-col">
+        <section class="tp-sec tp-test" aria-labelledby="tp2-h2">
+          <h4 id="tp2-h2"><span class="n">2</span>What is tested</h4>
+          <p>Whether the video stays out of solid geometry and still follows the input. VGGT-Ω reconstructs the video's camera poses and depth and places the path on Unreal's occupancy map, with SAM&nbsp;2 tracking the obstacle. A violation beyond the pose error is penetration, tunneling, vanishing or walking on. Unreal's own execution, a stop or a slide, is the reference.</p>
+          <p class="tp-scope">The evaluator is right on 366 of 391 Unreal renders of known outcome and agrees with DA3 on 3,350 generated videos (κ&nbsp;=&nbsp;0.89).</p>
+        </section>
+        <section class="tp-sec tp-score" aria-labelledby="tp2-h3">
+          <h4 id="tp2-h3"><span class="n">3</span>How it is scored</h4>
+          <div class="tp-m" id="tp-m-violation" tabindex="-1">
+            <div class="tp-mn">Violation <span class="dir">↓</span></div>
+            <p>Share of the 100 routes whose video penetrates, tunnels or erases the obstacle.</p>
+          </div>
+          <div class="tp-m" id="tp-m-sis" tabindex="-1">
+            <div class="tp-mn">SIS, Safe-Intent Score <span class="dir">↑</span></div>
+            <div class="tp-f">SIS = 1[safe ∧ with the input] · exp(−(<i>μ</i><sup>2</sup> + <i>ν</i><sup>2</sup>) / 2<i>s</i><sup>2</sup>), &nbsp;<i>s</i> = 0.5</div>
+            <ul>
+              <li><i>μ</i>: chunks of travel the camera stops short of the engine's contact (0.3&nbsp;m allowed for position error).</li>
+              <li><i>ν</i>: share of the engine's slide the video misses, on the 65 routes where the engine slides ≥&nbsp;0.5&nbsp;m (0 elsewhere).</li>
+              <li>With the input: not going back, wrong way, turning away or standing still.</li>
+            </ul>
+          </div>
+          <div class="tp-m" id="tp-m-slide" tabindex="-1">
+            <div class="tp-mn">Slide <span class="dir">↑</span></div>
+            <p>Share of the engine's slide the video makes, on those 65 routes.</p>
+          </div>
+          <div class="tp-m" id="tp-m-open" tabindex="-1">
+            <div class="tp-mn">Open paths</div>
+            <p>50 unobstructed control routes check that a method does not stop early or go back.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="tp-task" id="tp-3" data-task="3" data-title="Open domain, judged by VLMs" role="tabpanel" aria-labelledby="tp-tab-3" hidden>
+      <div class="tp-col">
+        <section class="tp-sec tp-io" aria-labelledby="tp3-h1">
+          <h4 id="tp3-h1"><span class="n">1</span>Input → output</h4>
+          <div class="tp-strip">
+            <figure class="tp-node"><div class="tp-pic"><img id="tp3-in" data-src="media/posters/t3_wbench_case69__lingbot__raw.webp" alt="An open-domain input image" width="832" height="464"><kbd class="tp-key">8 s</kbd></div>
+              <figcaption><b>One image</b> open-domain, no history, and an 8 s input that drives into a visible obstacle</figcaption></figure>
+            <span class="tp-arrow" aria-hidden="true"></span>
+            <figure class="tp-node tp-box"><div class="tp-pic tp-model"><span>World model<br>+ method</span></div>
+              <figcaption><b>Image to video</b> first or third person</figcaption></figure>
+            <span class="tp-arrow" aria-hidden="true"></span>
+            <figure class="tp-node"><div class="tp-pic"><canvas class="tp-mirror" id="tp3-mirror" aria-hidden="true"></canvas></div>
+              <figcaption><b>Output</b> the generated video, judged by four VLMs</figcaption></figure>
+          </div>
+        </section>
+        <section class="tp-sec tp-ex" aria-labelledby="tp3-h4">
+          <h4 id="tp3-h4"><span class="n">4</span>One real example</h4>
+          <div class="tp-exbar"><div class="seg" role="group" aria-label="Example" id="tp3-pick"><button type="button" aria-pressed="true" data-k="0">Static obstacle</button><button type="button" aria-pressed="false" data-k="1">Moving obstacle</button></div><span class="tp-case" id="tp3-case"></span></div>
+          <div class="tp-tiles" id="tp3-tiles"></div>
+          <div class="tp-player"><button type="button" class="iconbtn" id="tp3-play" aria-label="Play"></button><span class="time mono small" id="tp3-time">0.00 s</span></div>
+          <p class="note">Yellow: the obstacle, outlined as in the paper on the first frame and tracked by SAM&nbsp;2 in the clips. After each verdict: how many of the four VLM judges gave it (3/4 is three of four). From the paper's Task&nbsp;3 figure, not the score.</p>
+        </section>
+      </div>
+      <div class="tp-col">
+        <section class="tp-sec tp-test" aria-labelledby="tp3-h2">
+          <h4 id="tp3-h2"><span class="n">2</span>What is tested</h4>
+          <p>Whether a method still holds outside the training domain, on images not rendered in Unreal, with static and moving obstacles. With no 3D ground truth, four VLM judges apply Task&nbsp;2's rule to what can be seen, under one fixed prompt.</p>
+          <p class="tp-scope">Static: 81 WBench images (53 first person, 28 third person). Dynamic: 50 images with moving obstacles (30 first person, 20 third person).</p>
+        </section>
+        <section class="tp-sec tp-score" aria-labelledby="tp3-h3">
+          <h4 id="tp3-h3"><span class="n">3</span>How it is scored</h4>
+          <div class="tp-m" id="tp-m-static" tabindex="-1">
+            <div class="tp-mn">Static violation rate <span class="dir">↓</span></div>
+            <p>Share of the 81 static-obstacle videos with a violation.</p>
+          </div>
+          <div class="tp-m" id="tp-m-dynamic" tabindex="-1">
+            <div class="tp-mn">Dynamic violation rate <span class="dir">↓</span></div>
+            <p>Share of the 50 moving-obstacle videos with a violation.</p>
+          </div>
+          <div class="tp-m" id="tp-m-judges" tabindex="-1">
+            <div class="tp-mn">VLM judges</div>
+            <p>Both rates are the mean of the two judges closest to people, Claude Opus 5.5 and GPT-6 Astra, validated against three human annotators on 269 majority-labeled videos.</p>
+          </div>
+          <div class="tp-m" id="tp-m-overall" tabindex="-1">
+            <div class="tp-mn">Overall <span class="dir">↑</span> <span class="tp-where">main table</span></div>
+            <p>Mean of SIS and the Task&nbsp;3 share of safe videos that follow the input. A Task&nbsp;3 video is safe and with the input when the judge finds neither a violation nor going back.</p>
+          </div>
+        </section>
+      </div>
     </div>
   </dialog>
 </section>

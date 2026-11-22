@@ -7,8 +7,9 @@ import { $, $$, el, clamp, GEN, GEN_NAME, GEN_SHORT, ICON, getBench, getClips, c
 import { SyncGroup, wirePlayer } from './sync.js';
 import { makeTile } from './tiles.js';
 import { TopView, loadTop, keysFor } from './topview.js';
+import { initTaskPanel } from './taskpanel.js';
 
-const PAGE = 8;           // two rows of four on desktop (four rows of two on phones)
+const PAGE = 8;          // two rows of four on desktop (four rows of two on phones)
 // autoplay gate for the cards' clips: >= 4 cores, deviceMemory unknown or >= 4 GB, no Save-Data, no reduced motion, Low data off
 const autoplayOn = () => (navigator.hardwareConcurrency || 0) >= 4 && (navigator.deviceMemory == null || navigator.deviceMemory >= 4)
   && !(navigator.connection && navigator.connection.saveData) && !reduceMotion && !lowData.on;
@@ -18,6 +19,8 @@ const nameOf = (r) => r.name ? cap(r.name) : (r.track === 'control' ? 'Open path
 const sceneOf = (r) => r.scene.replace(/_/g, ' ');
 
 export async function initBench() {
+  // the three task cards open their panel (what each task takes, tests and scores, with one real case): js/taskpanel.js
+  initTaskPanel().catch(err => console.error('task panel', err));
   const B = await getBench(), C = await getClips();
   const cats = B.categories;
   const routes = B.routes;
