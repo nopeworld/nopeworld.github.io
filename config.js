@@ -21,7 +21,7 @@ window.NOPE_CONFIG = {
   // the promotional video after the abstract. On play the page tries YouTube; where YouTube cannot be reached (a thumbnail
   // does not load within 2.5 s, e.g. mainland China) it plays Bilibili if set, else our own file. Nothing loads before play.
   video_youtube: "dS64U7_3GQs",       // https://youtu.be/dS64U7_3GQs
-  video_bilibili: "",                 // a BV id, e.g. "BV1xx411c7mD", once uploaded
+  video_bilibili: "BV1Tqy5znEfA",     // https://www.bilibili.com/video/BV1Tqy5znEfA
   video: "media/promo/nopeworld_promo_1080p.mp4",   // our own copy (43.5 MB): the fallback, and the "file" link
   video_poster: "media/promo/nopeworld_promo_poster.webp",
   bibtex: {
