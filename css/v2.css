@@ -428,3 +428,23 @@ svg.chart#t1chart, svg.chart#openchart { width: 100%; height: auto; display: blo
   #problem .prob-split, #problem .wrap > .controls { max-width: none; margin-inline: calc(50% - min(640px, 50vw - 24px)); }
   #problem .prob-split { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
 }
+
+/* user 11-22: the promo video larger (up to 1280 px, past the text column; the whole video still fits one screen) */
+@media (min-width: 961px) {
+  .promo { max-width: none; width: min(1280px, calc(100vw - 48px), calc((100svh - 150px) * 16 / 9)); margin-inline: auto; position: relative; left: 50%; transform: translateX(-50%); }
+  .promo-wrap .promo-alt { width: auto; }
+}
+/* the route table in Compare scrolls inside its card on narrow screens */
+table.vtable { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* user 11-22: Compare's case row fills the width (each case an equal share, bigger thumbnails); phones scroll it sideways */
+@media (min-width: 961px) {
+  .casebar { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(140px, 1fr); gap: 12px; overflow-x: auto; align-items: stretch; }
+  .casebtn { width: auto; }
+  .casebtn img { aspect-ratio: 16 / 9; }
+}
+
+/* phones: nothing may widen the layout viewport (words waiting off-screen for their entrance did, to 457 px at 390, which
+   pushed the header's switch out of view and let the page zoom out) */
+html { overflow-x: hidden; overflow-x: clip; }
+/* phones: one wipe tile per row in the Problem grid, so both labels and verdicts fit */
+@media (max-width: 600px) { #prob-grid { grid-template-columns: minmax(0, 1fr) !important; } }

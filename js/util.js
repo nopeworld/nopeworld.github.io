@@ -32,9 +32,11 @@ export function json(url) {
   return cache.get(url);
 }
 
-// low-data mode: posters only until the reader presses play (Save-Data and reduced motion switch it on by default)
-const saveData = navigator.connection && navigator.connection.saveData;
-let low = (() => { try { const v = localStorage.getItem('nope-lowdata'); if (v != null) return v === '1'; } catch (e) { /* storage blocked */ } return !!saveData; })();
+// low-data mode: posters only until the reader presses play. No switch on the page (user 11-22): it turns on by itself with
+// the browser's Save-Data or a 2G-class connection, or with ?lowdata=1 in the address. The old switch's stored value is dropped.
+const conn = navigator.connection;
+let low = !!(conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ''))) || /[?&]lowdata=1\b/.test(location.search);
+try { localStorage.removeItem('nope-lowdata'); } catch (e) { /* storage blocked */ }
 const lowListeners = new Set();
 export const lowData = { get on() { return low; }, set(v) { low = !!v; try { localStorage.setItem('nope-lowdata', low ? '1' : '0'); } catch (e) { /* ignore */ }
   document.documentElement.classList.toggle('lowdata-on', low); lowListeners.forEach(f => f(low)); }, listen(f) { lowListeners.add(f); } };

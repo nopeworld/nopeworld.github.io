@@ -4,6 +4,7 @@
 // the same pieces played once, unpinned.
 import { $, $$, reduceMotion } from './util.js';
 import { heroApi } from './hero.js';
+import { opening } from './opening.js';
 
 const G = () => window.gsap;
 const HEADER = 60;
@@ -243,7 +244,7 @@ export function initMotion(lenis) {
   const plugins = [window.ScrollTrigger, window.SplitText, window.Flip, window.DrawSVGPlugin, window.ScrambleTextPlugin].filter(Boolean);
   gsap.registerPlugin(...plugins);
   if (reduceMotion) { d.classList.remove('intro-on'); d.classList.add('hero-go'); $('#title')?.classList.add('go'); return; }
-  intro(heroIn);
+  opening(heroIn);                        // the Platform 9¾ intro (opening.js); without it, heroIn alone
   const mm = gsap.matchMedia();
   mm.add({ wide: '(min-width: 961px)', narrow: '(max-width: 960px)' }, (ctx) => {
     const { wide } = ctx.conditions;

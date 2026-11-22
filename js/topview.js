@@ -1,7 +1,7 @@
 // Top view of a route on Unreal's true map (site/data/topview/<case>.json): map polygons, the route's obstacle, the input,
 // Unreal's executed path and each method's VGGT-Omega camera path, animated to the video time.
 import { json, METH_COLOR } from './util.js';
-import { ground, solids, obstacle, haloLine, camera, arrowHead, scaleBar, INK } from './mapdraw.js';
+import { ground, solids, obstacle, haloLine, camera, arrowHead, scaleBar, INK, paper } from './mapdraw.js';
 
 export const loadTop = (c) => json(`data/topview/${c}.json`);
 
@@ -14,7 +14,8 @@ function interp(path, t) {          // position on a timed path at time t (clamp
 
 export class TopView {
   constructor(canvas, { mini = false } = {}) { this.c = canvas; this.ctx = canvas.getContext('2d'); this.d = null; this.keys = []; this.mini = mini; this.t = 1e9; this.hl = null;
-    if (!mini && 'ResizeObserver' in window) new ResizeObserver(() => this.draw()).observe(canvas); }
+    if (!mini && 'ResizeObserver' in window) new ResizeObserver(() => this.draw()).observe(canvas);
+    addEventListener('nope:theme', () => this.draw()); }
   // keys: [{ key: 'lingbot|raw', color, width, dash, alpha, label }]
   set(data, keys) { this.d = data; this.keys = keys || []; this.view = this.fitView(); this.draw(); }
   fitView() {
@@ -40,7 +41,7 @@ export class TopView {
     const cu = (u0 + u1) / 2, cv = (v0 + v1) / 2;
     const X = (u) => W / 2 + (u - cu) * s, Y = (v) => H / 2 - (v - cv) * s;
     ctx.clearRect(0, 0, W, H);
-    if (this.mini) { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); } else ground(ctx, W, H, X, Y, s, dpr, cu, cv);
+    if (this.mini) { ctx.fillStyle = paper().ground; ctx.fillRect(0, 0, W, H); } else ground(ctx, W, H, X, Y, s, dpr, cu, cv);
     solids(ctx, d.map, X, Y, dpr);
     obstacle(ctx, d.obstacle, X, Y, dpr);
     // Unreal: a wide soft band (where the camera should go)

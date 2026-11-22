@@ -48,12 +48,16 @@ export function smoothRings(rings) {
 }
 
 export const INK = '#1d2129';
+// the paper the maps are drawn on: white by day, dimmed parchment in Night View (js/theme.js sets <html data-theme>);
+// the ink, the paths and the obstacle keep their colours
+export const paper = () => (document.documentElement.dataset.theme === 'night'
+  ? { ground: '#d9d0bc', dot: '#bcb29c', solid: '#c8bea8', edge: '#8a806b' } : { ground: '#ffffff', dot: '#d7dce4', solid: '#e1e5ec', edge: '#a3abb9' });
 
 // white ground and a 1 m dot grid
 export function ground(ctx, W, H, X, Y, s, dpr, cu, cv) {
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  const P = paper(); ctx.fillStyle = P.ground; ctx.fillRect(0, 0, W, H);
   if (s < 14 * dpr) return;
-  ctx.fillStyle = '#d7dce4';
+  ctx.fillStyle = P.dot;
   const r = Math.max(1, 1.1 * dpr);
   for (let g = Math.floor(cu - W / 2 / s) - 1; g < cu + W / 2 / s + 1; g++)
     for (let h = Math.floor(cv - H / 2 / s) - 1; h < cv + H / 2 / s + 1; h++) { ctx.beginPath(); ctx.arc(X(g), Y(h), r, 0, 7); ctx.fill(); }
@@ -69,9 +73,9 @@ export function solids(ctx, rings, X, Y, dpr) {
   const R = smoothRings(rings); ctx.save();
   ctx.lineJoin = 'round';
   ctx.shadowColor = 'rgba(30, 40, 60, .16)'; ctx.shadowBlur = 10 * dpr; ctx.shadowOffsetY = 2 * dpr;
-  path(ctx, R, X, Y); ctx.fillStyle = '#e1e5ec'; ctx.fill('evenodd');
+  const P = paper(); path(ctx, R, X, Y); ctx.fillStyle = P.solid; ctx.fill('evenodd');
   ctx.shadowColor = 'transparent';
-  ctx.strokeStyle = '#a3abb9'; ctx.lineWidth = 1.1 * dpr; ctx.stroke();
+  ctx.strokeStyle = P.edge; ctx.lineWidth = 1.1 * dpr; ctx.stroke();
   ctx.restore();
 }
 

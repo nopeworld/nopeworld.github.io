@@ -149,6 +149,7 @@ export async function initPlayground() {
     for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, () => { keys.delete(k); b.classList.remove('on'); });
   });
   $('#pg-reset').addEventListener('click', () => { reset(); draw(); });
+  addEventListener('nope:theme', () => draw());      // Night View: the map's paper changes (mapdraw.js paper())
   if ('ResizeObserver' in window) new ResizeObserver(draw).observe(c);
   draw();
   // a short demo push when it first scrolls into view: W + A into the wall, as on the route

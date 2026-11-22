@@ -136,3 +136,16 @@
 }
 @media (prefers-reduced-motion: reduce) { #cards.turn > * { animation: none; } }
 @media print { .bfilters, .cards-hint, .bench-pager { display: none; } }
+
+/* narrow and mid widths: the filter rows and the generator buttons wrap instead of widening the page (user 11-22: mobile) */
+#bench .frow { flex-wrap: wrap; min-width: 0; }
+#bench .frow .seg, #bench #f-gen { flex-wrap: wrap; max-width: 100%; }
+#bench .fsel { min-width: 0; max-width: 100%; }
+#bench .fsel select { max-width: 100%; }
+@media (min-width: 561px) and (max-width: 760px) {
+  #bench .frow { flex-direction: column; align-items: stretch; }
+  #bench .bfilters .fgroup, #bench .bfilters .fsel { width: 100%; }
+  #bench #f-gen { width: 100%; }
+}
+@media (min-width: 561px) and (max-width: 760px) { #bench .bfilters .fgroup { flex-wrap: wrap; } #bench #f-gen { flex: 1 1 100%; } }
+@media (min-width: 561px) and (max-width: 760px) { #bench .bfilters .fsel { flex-wrap: wrap; } #bench .bfilters .fsel select { flex: 1 1 100%; width: 100%; } }

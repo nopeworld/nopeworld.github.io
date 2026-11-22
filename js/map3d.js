@@ -63,7 +63,8 @@ export class Map3D {
   constructor(host, d, renderer) {
     this.host = host; this.d = d; this.r = renderer; this.t = 0; this.keys = []; this.paths = []; this.hl = null; this.dirty = true; this.visible = false;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
-    renderer.setClearColor(0xfafbfc, 1);
+    const night = document.documentElement.dataset.theme === 'night';      // Night View: the same scene on dimmed parchment
+    renderer.setClearColor(night ? 0xd5ccb8 : 0xfafbfc, 1);
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
     host.append(renderer.domElement);
     const scene = this.scene = new THREE.Scene();
@@ -74,7 +75,7 @@ export class Map3D {
     const c2 = box.getCenter(new THREE.Vector2()), size = box.getSize(new THREE.Vector2());
     this.target = new THREE.Vector3(c2.x, 0.4, -c2.y);
     this.radius = Math.max(2.2, Math.hypot(size.x, size.y) / 2 + 1.2);
-    scene.fog = new THREE.Fog(0xfafbfc, this.radius * 2.2, this.radius * 6);
+    scene.fog = new THREE.Fog(night ? 0xd5ccb8 : 0xfafbfc, this.radius * 2.2, this.radius * 6);
     // light
     scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa1af, 1.25));
     const sun = new THREE.DirectionalLight(0xffffff, 1.9);
@@ -83,7 +84,7 @@ export class Map3D {
     const sc = sun.shadow.camera, ext = this.radius + 5; sc.left = -ext; sc.right = ext; sc.top = ext; sc.bottom = -ext; sc.near = 1; sc.far = 40;
     scene.add(sun, sun.target);
     // floor and a 1 m grid
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshLambertMaterial({ color: 0xf1f3f6 }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshLambertMaterial({ color: night ? 0xd9d0bc : 0xf1f3f6 }));
     floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
     const grid = new THREE.GridHelper(60, 60, 0xd5dae2, 0xe3e7ee); grid.position.set(Math.round(this.target.x), 0.002, Math.round(this.target.z)); scene.add(grid);
     // the map (without the obstacle's own rings) and the obstacle
@@ -107,6 +108,8 @@ export class Map3D {
     this.theta = this.theta0; this.phi = 0.86; this.user = 0;
     this.drag();
     new ResizeObserver(() => this.resize()).observe(host); this.resize();
+    addEventListener('nope:theme', (e) => { const n = e.detail === 'night'; renderer.setClearColor(n ? 0xd5ccb8 : 0xfafbfc, 1); scene.fog.color.set(n ? 0xd5ccb8 : 0xfafbfc);
+      floor.material.color.set(n ? 0xd9d0bc : 0xf1f3f6); this.dirty = true; });
     this.ready = false;
     const go = () => { this.ready = true; if (this.visible) this.loop(); };
     (renderer.compileAsync ? renderer.compileAsync(scene, this.cam).catch(() => {}) : Promise.resolve()).then(go);

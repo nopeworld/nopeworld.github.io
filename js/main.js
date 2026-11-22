@@ -138,8 +138,7 @@ async function equations() {
 }
 
 function lowDataSwitch() {
-  const sw = $('#lowdata'); sw.checked = lowData.on;
-  sw.addEventListener('change', () => lowData.set(sw.checked));
+  const sw = $('#lowdata'); if (sw) { sw.checked = lowData.on; sw.addEventListener('change', () => lowData.set(sw.checked)); }
 }
 
 // ---------- sections, each started when it comes near
