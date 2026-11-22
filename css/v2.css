@@ -448,3 +448,7 @@ table.vtable { display: block; max-width: 100%; overflow-x: auto; -webkit-overfl
 html { overflow-x: hidden; overflow-x: clip; }
 /* phones: one wipe tile per row in the Problem grid, so both labels and verdicts fit */
 @media (max-width: 600px) { #prob-grid { grid-template-columns: minmax(0, 1fr) !important; } }
+
+/* user 11-22: the authors sit right under the title (before the tagline) */
+.hero-top > .authors { margin: calc(-1 * clamp(4px, 1vw, 14px)) 0 0; font-size: clamp(15px, 1.15vw, 17px); }
+.hero-top > .authors [data-cfg=authors] { font-size: clamp(16px, 1.3vw, 19px); }

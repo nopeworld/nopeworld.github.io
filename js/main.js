@@ -152,7 +152,6 @@ const SECTIONS = [
   ['#results', () => import('./results.js').then(m => m.initResults())],
   ['#compare', () => import('./compare.js').then(m => m.initCompare())],
   ['#open', () => import('./open.js').then(m => m.initOpen())],
-  ['#limits', () => import('./limits.js').then(m => m.initLimits())],
   ['#num-headline', () => import('./results.js').then(m => m.initHeadline())],
 ];
 

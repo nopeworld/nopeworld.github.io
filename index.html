@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Non-penetrating World Models</title>
-<meta name="description" content="Teaching world models to say NoPe to obstacles. Video world models pass through obstacles; their frozen DiT already predicts the contact; NoPeWorld, a small head on its hidden states, replaces unsafe actions with the closest safe ones. NoPeBench evaluates six generators.">
+<meta name="description" content="Teaching world models to say NoPe to obstacles. Video world models pass through obstacles, yet their frozen DiT already predicts the contact. NoPeWorld, a small head on its hidden states, replaces unsafe actions with the closest safe ones. NoPeBench evaluates six world models.">
 <meta name="theme-color" content="#ffffff">
 <meta name="referrer" content="no-referrer">
 <meta name="author" content="Yuhang Dai, Yinwei Wu, Ziyue Lin, Han Ji, Xingyi Yang">
@@ -22,6 +22,29 @@
 <link rel="stylesheet" href="css/method.css">
 <link rel="stylesheet" href="css/bench.css">
 <link rel="stylesheet" href="css/theme.css">
+<!-- every module the page boots with, fetched in parallel (otherwise each import waits for the one before it) -->
+<link rel="modulepreload" href="js/main.js">
+<link rel="modulepreload" href="js/theme.js">
+<link rel="modulepreload" href="js/util.js">
+<link rel="modulepreload" href="js/ui.js">
+<link rel="modulepreload" href="js/motion.js">
+<link rel="modulepreload" href="js/opening.js">
+<link rel="modulepreload" href="js/sync.js">
+<link rel="modulepreload" href="js/tiles.js">
+<link rel="modulepreload" href="js/overlay.js">
+<link rel="modulepreload" href="js/mapdraw.js">
+<link rel="modulepreload" href="js/topview.js">
+<link rel="modulepreload" href="js/hero.js">
+<link rel="modulepreload" href="js/problem.js">
+<link rel="modulepreload" href="js/playground.js">
+<link rel="modulepreload" href="js/knows.js">
+<link rel="modulepreload" href="js/method.js">
+<link rel="modulepreload" href="js/bench.js">
+<link rel="modulepreload" href="js/results.js">
+<link rel="modulepreload" href="js/barchart.js">
+<link rel="modulepreload" href="js/dotplot.js">
+<link rel="modulepreload" href="js/compare.js">
+<link rel="modulepreload" href="js/open.js">
 <link rel="stylesheet" href="vendor/katex.min.css" media="print" onload="this.media='all'">
 <script>
   // the intro plays once per tab session, only at the top of the page, never with reduced motion
@@ -85,15 +108,14 @@
         <li><a href="#results"><i>05</i>Results</a></li>
         <li><a href="#compare"><i>06</i>Compare</a></li>
         <li><a href="#open"><i>07</i>Open domain</a></li>
-        <li><a href="#limits"><i>08</i>Limits</a></li>
-        <li><a href="#cite"><i>09</i>BibTeX</a></li>
+        <li><a href="#cite"><i>08</i>BibTeX</a></li>
       </ol>
       <span class="nav-ind" aria-hidden="true"></span>
     </nav>
     <div class="tools">
       <details class="mnav"><summary aria-label="Sections">Sections</summary>
         <ol><li><a href="#problem"><i>01</i>Problem</a></li><li><a href="#knows"><i>02</i>Insight</a></li><li><a href="#method"><i>03</i>Method</a></li><li><a href="#bench"><i>04</i>NoPeBench</a></li>
-        <li><a href="#results"><i>05</i>Results</a></li><li><a href="#compare"><i>06</i>Compare</a></li><li><a href="#open"><i>07</i>Open domain</a></li><li><a href="#limits"><i>08</i>Limits</a></li><li><a href="#cite"><i>09</i>BibTeX</a></li></ol>
+        <li><a href="#results"><i>05</i>Results</a></li><li><a href="#compare"><i>06</i>Compare</a></li><li><a href="#open"><i>07</i>Open domain</a></li><li><a href="#cite"><i>08</i>BibTeX</a></li></ol>
       </details>
       <label class="lowdata themesw" title="Night View: the page in dark tones with gold light">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 12.6A6.5 6.5 0 0 1 7.4 4.5a6.5 6.5 0 1 0 8.1 8.1z"/></svg>
@@ -127,9 +149,9 @@
           <span class="tk-stamp" aria-hidden="true"><span class="nope-stamp">NoPe</span></span>
         </div>
       </div>
+      <p class="authors"><span data-cfg="authors"><span class="nm">Yuhang Dai</span>, <span class="nm">Yinwei Wu</span>, <span class="nm">Ziyue Lin</span>, <span class="nm">Han Ji</span>, <span class="nm">Xingyi Yang<a class="corr" href="mailto:xingyi.yang@polyu.edu.hk" title="Corresponding author" aria-label="Corresponding author: e-mail"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/><path d="M3 5.5l7 5.5 7-5.5"/></svg></a></span></span><span class="affil" data-cfg="affil">Learning &amp; Generation Lab, The Hong Kong Polytechnic University</span></p>
       <div class="hero-side">
         <p class="tagline">Teaching world models to say <b class="nope">NoPe</b> to obstacles.</p>
-        <p class="authors"><span data-cfg="authors"><span class="nm">Yuhang Dai</span>, <span class="nm">Yinwei Wu</span>, <span class="nm">Ziyue Lin</span>, <span class="nm">Han Ji</span>, <span class="nm">Xingyi Yang<a class="corr" href="mailto:xingyi.yang@polyu.edu.hk" title="Corresponding author" aria-label="Corresponding author: e-mail"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/><path d="M3 5.5l7 5.5 7-5.5"/></svg></a></span></span><span class="affil" data-cfg="affil">Learning &amp; Generation Lab, The Hong Kong Polytechnic University</span></p>
         <div class="links" id="links"></div>
       </div>
     </div>
@@ -153,8 +175,8 @@
           <button aria-pressed="true" data-seed="1">Seed 1</button><button aria-pressed="false" data-seed="2">Seed 2</button><button aria-pressed="false" data-seed="3">Seed 3</button>
         </div>
         <label class="toggle"><input type="checkbox" id="hero-ov"> Obstacle (SAM&nbsp;2)</label>
-        <span class="cap">LingBot-World&nbsp;2.0, one station image, <kbd>W</kbd> held at the pillar.</span>
-        <span class="infobox"><button class="info" aria-expanded="false" aria-label="About this clip">i</button><span class="info-pop" role="note">Left: the raw model opens an arch in the bricks and walks through. Right: with NoPeWorld (collision mode) it stops at the bricks. Same image, prompt and seed on both sides. The raw model goes through in 3 of 3 seeds and NoPeWorld stops in 3 of 3, checked frame by frame. Real outputs at their native 832&thinsp;px.</span></span>
+        <span class="cap">LingBot-World&nbsp;2.0 on a station image, <kbd>W</kbd> held at the pillar.</span>
+        <span class="infobox"><button class="info" aria-expanded="false" aria-label="About this clip">i</button><span class="info-pop" role="note">Left: the raw model opens an arch in the bricks and walks through. Right: with NoPeWorld (collision mode) it stops at the bricks. Same image, prompt and seed on both sides. The raw model goes through in all 3 seeds and NoPeWorld stops in all 3, checked frame by frame. Real outputs at their native 832&thinsp;px.</span></span>
       </figcaption>
     </figure>
   </div>
@@ -168,13 +190,13 @@
         <div class="st-num" id="num-headline">
           <div class="big"><span class="from" data-count="74">74%</span><span class="arrow" aria-hidden="true"></span><span class="to" data-count="16">16%</span></div>
           <p class="lab"><span class="la">of generated videos penetrate or erase the obstacle.</span> <span class="lb">Averaged over six frozen world models on NoPeBench, before and after NoPeWorld.</span>
-            <span class="infobox"><button class="info" aria-expanded="false" aria-label="About this number">i</button><span class="info-pop" role="note">Task&nbsp;2 violation rate (the camera penetrates, tunnels through or erases the obstacle; VGGT-Ω evaluator on true Unreal geometry), averaged over six generators: raw model vs. + NoPeWorld in collision mode. Bars: each generator.</span></span></p>
+            <span class="infobox"><button class="info" aria-expanded="false" aria-label="About this number">i</button><span class="info-pop" role="note">Task&nbsp;2 violation rate (the camera penetrates, tunnels through or erases the obstacle; VGGT-Ω evaluator on true Unreal geometry), averaged over six world models: raw model vs. NoPeWorld in collision mode. Bars: one per world model.</span></span></p>
         </div>
-        <div class="st-bars"><div class="bars" id="num-bars" role="img" aria-label="Violation rate per generator, raw and with NoPeWorld"></div></div>
+        <div class="st-bars"><div class="bars" id="num-bars" role="img" aria-label="Violation rate per world model, raw and with NoPeWorld"></div></div>
       </div>
       <div class="st-minis">
-        <div class="mini"><b>&lt;2M</b><span>head parameters. The generator stays frozen.</span></div>
-        <div class="mini"><b>34</b><span>motions scored per chunk, before it is drawn.</span></div>
+        <div class="mini"><b>&lt;2M</b><span>head parameters. The world model stays frozen.</span></div>
+        <div class="mini"><b>34</b><span>motions scored per chunk, before the chunk is drawn.</span></div>
         <div class="mini"><b>+1%</b><span>time in prediction mode. No extra DiT pass.</span>
           <span class="infobox"><button class="info" aria-expanded="false" aria-label="About these numbers">i</button><span class="info-pop" role="note">34 candidates: the input, a stop, shorter steps and turns up to 90°. +1%: +0.7&thinsp;s on a 53.7&thinsp;s route, LingBot-World&nbsp;2.0.</span></span></div>
       </div>
@@ -207,7 +229,7 @@
     <div class="head">
       <span class="eyebrow"><span class="chap">01</span>The problem</span>
       <h2>World models pass through obstacles.</h2>
-      <p class="lede">Held <kbd>W</kbd>+<kbd>A</kbd> into a courtyard wall, five of six generators pass through it and one backs away. Unreal Engine slides along it.</p>
+      <p class="lede">With <kbd>W</kbd>+<kbd>A</kbd> held into a courtyard wall, five of six world models pass through it and one backs away. Unreal Engine slides along it.</p>
     </div>
     <div class="controls" style="margin:0 0 14px">
       <div class="seg dark big" role="group" aria-label="Method" id="prob-mode">
@@ -216,7 +238,7 @@
       <button class="iconbtn" id="prob-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
       <label class="toggle"><input type="checkbox" id="prob-ov" checked> Obstacle (SAM&nbsp;2)</label>
       <div class="scrub"><input type="range" id="prob-scrub" min="0" max="1000" value="0" aria-label="Time"><span class="time" id="prob-time">0.00 s</span></div>
-      <span class="infobox"><button class="info" aria-expanded="false" aria-label="How to read this">i</button><span class="info-pop" role="note">The paper's Fig.&nbsp;1. Unreal Engine, the ground truth, slides along the wall. Five of six raw generators pass through it; WorldPlay2 backs away. With NoPeWorld every one stops at the wall. <b>Chips</b> are the Task&nbsp;2 evaluator's verdict on that exact video. <b>Yellow</b> is the evaluator's SAM&nbsp;2.1 track of the wall, started from Unreal's true mask; it ends once SAM&nbsp;2 loses the wall (no mask for 0.25&thinsp;s, or the mask collapsing as a camera enters it), which also happens when a camera slides past or backs away. The chip, not the overlay, is the verdict.</span></span>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="How to read this">i</button><span class="info-pop" role="note">The paper's Fig.&nbsp;1. Unreal Engine, the ground truth, slides along the wall. Five of six raw world models pass through it; WorldPlay2 backs away. With NoPeWorld every one stops at the wall. <b>Chips</b> are the Task&nbsp;2 evaluator's verdict on that exact video. <b>Yellow</b> is the evaluator's SAM&nbsp;2.1 track of the wall, started from Unreal's true mask; it ends once SAM&nbsp;2 loses the wall (no mask for 0.25&thinsp;s, or the mask collapsing as a camera enters it), which also happens when a camera slides past or backs away. The chip, not the overlay, is the verdict.</span></span>
     </div>
     <div class="split prob-split">
       <div class="sweep-host"><div class="grid7" id="prob-grid"></div><div class="sweep" aria-hidden="true"></div></div>
@@ -224,7 +246,7 @@
         <div id="prob-unreal"></div>
         <div class="topview" id="prob-top"><canvas></canvas><div class="map3d" id="prob-3d" hidden></div><span class="view-tag" id="prob-3d-tag" hidden>drag to turn</span></div>
         <div class="legend"><span><i class="dash"></i>input</span><span><i class="gt"></i>Unreal</span><span><i class="raw"></i>raw</span><span><i class="ours"></i>+ NoPeWorld</span><span><i class="wall"></i>obstacle</span>
-          <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the map">i</button><span class="info-pop" role="note">Unreal's true map, sliced at body height (in 3D: the same slice, extruded). Each generator's camera path is reconstructed from its own video by the Task&nbsp;2 evaluator (VGGT-Ω).</span></span></div>
+          <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the map">i</button><span class="info-pop" role="note">Unreal's true map, sliced at body height (in 3D: the same slice, extruded). Each world model's camera path is reconstructed from its own video by the Task&nbsp;2 evaluator (VGGT-Ω).</span></span></div>
       </div>
     </div>
 
@@ -293,7 +315,7 @@
     <div class="head">
       <span class="eyebrow"><span class="chap">03</span>Method</span>
       <h2>Read the DiT, replace unsafe actions.</h2>
-      <p class="lede">Before each chunk, a head under 2&thinsp;M parameters scores 34 candidate motions on the frozen DiT: a safe input is kept, an unsafe one becomes the closest safe motion.</p>
+      <p class="lede">Before each chunk, a head with under 2M parameters reads the frozen DiT and scores 34 candidate motions. A safe input is kept; an unsafe one is replaced by the closest safe motion.</p>
     </div>
     <figure class="mfig">
       <div class="mfig-a">
@@ -305,11 +327,11 @@
         <span class="mw-steps" role="group" aria-label="Walk through the figure">
           <button type="button" data-s="0" aria-pressed="true"><i>1</i>Training</button><button type="button" data-s="1" aria-pressed="false"><i>2</i>Raw model</button><button type="button" data-s="2" aria-pressed="false"><i>3</i>Prediction mode</button><button type="button" data-s="3" aria-pressed="false"><i>4</i>Collision mode</button>
         </span>
-        <span class="mw-cap" aria-live="polite">Training: every candidate motion is swept through Unreal's true map and labelled; the head learns to predict the labels from the frozen DiT's states.</span>
+        <span class="mw-cap" aria-live="polite">Training: every candidate motion is swept through Unreal's true map and labeled; the head learns to predict the labels from the frozen DiT's states.</span>
       </figcaption>
     </figure>
     <ol class="mpoints">
-      <li><b><span class="mp-n">1</span>Read.</b> A head under 2&#8239;M parameters reads the frozen DiT before the chunk is drawn.</li>
+      <li><b><span class="mp-n">1</span>Read.</b> A head with under 2M parameters reads the frozen DiT before the chunk is drawn.</li>
       <li><b><span class="mp-n">2</span>Score.</b> It rates 34 candidate motions for safety and intent.</li>
       <li><b><span class="mp-n">3</span>Act.</b> Safe: keep the input. Unsafe: take the closest safe motion.</li>
     </ol>
@@ -317,7 +339,7 @@
       <div class="mm-lab">Two modes <span class="mm-sub">added time per route
         <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the timing">i</button><span class="info-pop" role="note">The paper's Table&nbsp;5, on LingBot-World&nbsp;2.0: 49 routes, 7 decisions each; the raw model takes 53.7&thinsp;s per route. Percentages are of that raw route.</span></span></span></div>
       <div class="mm" data-m="collision"><div class="mm-top"><b>Collision mode</b><span class="mm-v">+9.9&thinsp;s <em>+18%</em></span></div><p>Reads step&nbsp;0 of chunk&nbsp;<i>k</i>; reruns only step&nbsp;0 when it changes the input.</p><span class="mm-bar" aria-hidden="true"><i style="width:67%"></i></span></div>
-      <div class="mm" data-m="prediction"><div class="mm-top"><b>Prediction mode</b><span class="mm-v">+0.7&thinsp;s <em>+1%</em></span></div><p>Reads the commit pass of chunk&nbsp;<i>k</i>&minus;1: no extra DiT pass.</p><span class="mm-bar" aria-hidden="true"><i style="width:5%"></i></span></div>
+      <div class="mm" data-m="prediction"><div class="mm-top"><b>Prediction mode</b><span class="mm-v">+0.7&thinsp;s <em>+1%</em></span></div><p>Reads the states of chunk&nbsp;<i>k</i>&minus;1: no extra DiT pass.</p><span class="mm-bar" aria-hidden="true"><i style="width:5%"></i></span></div>
       <div class="mm depth" data-m="depth"><div class="mm-top"><b>External depth</b><span class="mm-v">+14.7&thinsp;s <em>+27%</em></span></div><p>The baseline: decodes every chunk and runs a depth network (DA3) on it.</p><span class="mm-bar" aria-hidden="true"><i style="width:100%"></i></span></div>
     </div>
   </div>
@@ -330,7 +352,7 @@
     <div class="wrap">
       <div class="head">
         <span class="eyebrow"><span class="chap">04</span>NoPeBench</span>
-        <h2>NoPeBench: every route hits an obstacle.</h2>
+        <h2>NoPeBench: does it stop at the wall?</h2>
         <p class="lede">100 routes into solid obstacles, 50 open paths where stopping would be wrong, and 131 open-domain images, in three tasks.</p>
       </div>
     </div>
@@ -347,7 +369,7 @@
   <div class="wrap bench-b" id="bench-explore">
     <div class="subhead">
       <h3>Every route, every verdict</h3>
-      <p>All 150 Task&nbsp;2 routes with the evaluator's verdict for every generator and method. <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the explorer">i</button><span class="info-pop" role="note">All 150 Task&nbsp;2 routes, unfiltered: the evaluator's verdict for every generator and method (VGGT-Ω, rule v3.1), the true map and every reconstructed camera path. Task&nbsp;1 runs on the same 100 collision routes, teacher-forced on Unreal's history, in 32 held-out scenes. Clips here are small previews (raw and collision mode; open paths: collision mode). A path whose history part misses the true history by more than 15&thinsp;cm is not drawn, as in the paper's figures (226 of 3,400).</span></span></p>
+      <p>All 150 Task&nbsp;2 routes with the evaluator's verdict for every world model and method. <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the explorer">i</button><span class="info-pop" role="note">All 150 Task&nbsp;2 routes, unfiltered: the evaluator's verdict for every world model and method (VGGT-Ω, rule v3.1), the true map and every reconstructed camera path. Task&nbsp;1 runs on the same 100 collision routes, teacher-forced on Unreal's history, in 32 held-out scenes. Clips here are small previews (raw and collision mode; open paths: collision mode). A path whose history part misses the true history by more than 15&thinsp;cm is not drawn, as in the paper's figures (226 of 3,400).</span></span></p>
     </div>
     <div class="bfilters" id="filters"></div>
     <div class="stats" id="bench-stats"></div>
@@ -377,12 +399,12 @@
     <div class="head">
       <span class="eyebrow"><span class="chap">05</span>Results</span>
       <h2>Fewer violations, more intent kept.</h2>
-      <p class="lede">The best Safe-Intent Score and Overall on all five pose-driven generators. A halt-only depth guard violates less on four of them, but cannot slide.</p>
+      <p class="lede">The best Safe-Intent Score and Overall on all five pose-driven world models. External depth, which can only stop, violates less on four of them but cannot slide.</p>
     </div>
     <div class="controls" style="margin:0 0 12px">
       <div class="seg" role="group" aria-label="Metric" id="metric"></div>
       <div class="seg dark" role="group" aria-label="View" id="rview"><button aria-pressed="true" data-v="chart">Chart</button><button aria-pressed="false" data-v="table">Table</button></div>
-      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the results">i</button><span class="info-pop" role="note">The main table of the paper, on six frozen generators. External depth reaches few violations by halting, which costs the slide (see Limits).</span></span>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the results">i</button><span class="info-pop" role="note">The main table of the paper, on six frozen world models. External depth keeps violations low by stopping, which gives up the slide.</span></span>
     </div>
     <div class="chartbox" id="chartbox"><svg class="chart" id="chart" viewBox="0 0 900 470"></svg><div class="mlegend" id="mlegend"></div><p class="note" id="metric-note" style="margin-top:8px"></p></div>
     <div class="chartbox tablewrap" id="tablebox" hidden></div>
@@ -452,8 +474,8 @@
         <div class="seg" role="group" aria-label="Obstacles" id="t3-block"><button aria-pressed="true" data-b="all">All</button><button aria-pressed="false" data-b="static">Static</button><button aria-pressed="false" data-b="dynamic">Moving</button></div>
         <div class="seg" role="group" aria-label="Viewpoint" id="t3-person"><button aria-pressed="true" data-p="all">Both views</button><button aria-pressed="false" data-p="fp">First person</button><button aria-pressed="false" data-p="tp">Third person</button></div>
         <label class="toggle"><input type="checkbox" id="t3-ov" checked> Obstacle (SAM&nbsp;2)</label>
-        <span class="note t3-pick">16 examples from the paper's figure, not the score.</span>
-        <span class="infobox"><button class="info" aria-expanded="false" aria-label="How these were chosen">i</button><span class="info-pop" role="note">The 16 pairs of the paper's Task&nbsp;3 figure: one generator per column, chosen so that the original violates by at least three judges and NoPeWorld by at most one. The scores over all 131 images are in Results. Yellow: SAM&nbsp;2.1 tracking of the obstacle named by the case, started from the paper's outline on the input image and drawn until first lost. After each verdict: how many of the four VLM judges gave it.</span></span>
+        <span class="note t3-pick">16 examples from the paper's figure; the scores are in Results.</span>
+        <span class="infobox"><button class="info" aria-expanded="false" aria-label="How these were chosen">i</button><span class="info-pop" role="note">The 16 pairs of the paper's Task&nbsp;3 figure: one world model per column, chosen where at least three judges flag the raw model and at most one flags NoPeWorld. The scores over all 131 images are in Results. Yellow: SAM&nbsp;2.1 tracking of the obstacle named by the case, started from the paper's outline on the input image and drawn until first lost. The number after each verdict is how many of the four VLM judges agree.</span></span>
       </div>
     </div>
     <div class="t3-viewport"><div class="t3grid" id="t3grid"></div></div>
@@ -461,22 +483,11 @@
 </section>
 
 <!-- ======================================================= LIMITS -->
-<section id="limits">
-  <div class="wrap">
-    <div class="head">
-      <span class="eyebrow"><span class="chap">08</span>Limits</span>
-      <h2>Limitations.</h2>
-      <p class="lede">These are limits of the generators themselves: NoPeWorld chooses the motion, the generator still has to render it.</p>
-    </div>
-    <div class="limits" id="limits-grid"></div>
-  </div>
-</section>
-
 <!-- ======================================================= CITE -->
 <section id="cite">
   <div class="wrap">
     <div class="head">
-      <span class="eyebrow"><span class="chap">09</span>Cite</span>
+      <span class="eyebrow"><span class="chap">08</span>Cite</span>
       <h2>BibTeX</h2>
     </div>
     <div class="bib" id="bib"><button class="copy" id="copy">Copy</button><code id="bibtext"></code></div>
@@ -489,7 +500,7 @@
     <div class="foot-big" aria-hidden="true"><span>Say NoPe.</span><span class="fb2">Never pass through.</span></div>
     <div class="foot-grid">
       <div>Every clip is a real output of the named model on the named input. Verdicts and numbers come from the paper's evaluators and result files.</div>
-      <div>Generators used frozen, as released: LingBot-World 2.0, HY-WorldPlay, Echo-WM, Evoke-Turbo, WorldPlay2 and Hy-Nomas (the last two concurrent work). Scenes from UnrealZoo; static Task 3 images from WBench.</div>
+      <div>All world models are used frozen, as released: LingBot-World 2.0, HY-WorldPlay, Echo-WM, Evoke-Turbo, WorldPlay2 and Hy-Nomas; WorldPlay2 and Hy-Nomas are concurrent work. Scenes from UnrealZoo; static Task 3 images from WBench.</div>
       <div>No third-party requests or cookies until you play the video.</div>
     </div>
     <div class="endwall" aria-hidden="true"></div>

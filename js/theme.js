@@ -59,7 +59,7 @@ export function flip(t, from) {
 }
 
 // a hat hung at the end of a few headings (a line drawing by day, gold by night); it drops on once the heading is in
-const HATS = ['#problem .head h2', '#method .head h2', '#results .head h2', '#limits .head h2'];
+const HATS = ['#problem .head h2', '#method .head h2', '#results .head h2'];
 function hats() {
   // on when the heading's words have come in (motion.js starts them as the heading passes 88% of the screen), so a
   // hat never waits there alone; at once with reduced motion

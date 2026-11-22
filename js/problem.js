@@ -31,20 +31,22 @@ export async function initProblem() {
   const setCut = (v) => { cut = Math.max(0, Math.min(1, v)); grid.style.setProperty('--cut', (cut * 100).toFixed(2) + '%'); };
   setCut(1);
   const ease = (k) => 1 - Math.pow(1 - k, 3);
-  const glide = (to, ms = 900) => { if (reduceMotion) { setCut(to); return; } const from = cut, t0 = performance.now();
-    const step = (t) => { const k = Math.min(1, (t - t0) / ms); setCut(from + (to - from) * ease(k)); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); };
+  // one glide at a time: a new one (a button, a drag) cancels the one running, so the intro never undoes the reader's choice
+  let glideId = 0, touched = false;
+  const glide = (to, ms = 900) => { const id = ++glideId; if (reduceMotion) { setCut(to); return; } const from = cut, t0 = performance.now();
+    const step = (t) => { if (id !== glideId) return; const k = Math.min(1, (t - t0) / ms); setCut(from + (to - from) * ease(k)); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); };
   let drag = null;
   grid.addEventListener('pointerdown', (e) => { const d = e.target.closest('.duo-w'); if (!d || e.target.closest('.play')) return;
     // low data: a touch on any tile starts the clips, as its play button does
     if (lowData.on && !g.userStarted) g.play(true);
-    drag = d; d.setPointerCapture(e.pointerId); move(e); setPressed(null); });
+    drag = d; touched = true; ++glideId; d.setPointerCapture(e.pointerId); move(e); setPressed(null); });
   const move = (e) => { if (!drag) return; const r = drag.getBoundingClientRect(); setCut((e.clientX - r.left) / r.width); };
   grid.addEventListener('pointermove', move);
   grid.addEventListener('pointerup', () => { drag = null; });
   grid.addEventListener('pointercancel', () => { drag = null; });
   // the mode buttons now jump the wipe: all raw, half and half, all NoPeWorld
   const setPressed = (m) => $$('#prob-mode button').forEach(x => x.setAttribute('aria-pressed', x.dataset.m === m));
-  $$('#prob-mode button').forEach(b => b.addEventListener('click', () => { setPressed(b.dataset.m); glide(b.dataset.m === 'raw' ? 1 : b.dataset.m === 'collision' ? 0 : 0.5, 700); }));
+  $$('#prob-mode button').forEach(b => b.addEventListener('click', () => { touched = true; setPressed(b.dataset.m); glide(b.dataset.m === 'raw' ? 1 : b.dataset.m === 'collision' ? 0 : 0.5, 700); }));
 
   const top = new TopView($('#prob-top canvas'));
   const tv = await loadTop(F.top);
@@ -83,7 +85,7 @@ export async function initProblem() {
   g.on((t) => { top.setTime(t); if (map3) map3.setTime(t); });
   wirePlayer(g, { button: $('#prob-play'), scrub: $('#prob-scrub'), time: $('#prob-time') });
   let shown = false;
-  onVisible($('#prob-grid'), (v) => { g.setVisible(v); if (v && !shown) { shown = true; setTimeout(() => glide(0.5, 1100), 350); } }, 0.05);
+  onVisible($('#prob-grid'), (v) => { g.setVisible(v); if (v && !shown) { shown = true; setTimeout(() => { if (!touched) glide(0.5, 1100); }, 350); } }, 0.05);
   setPressed('split');
   g.play();
 }

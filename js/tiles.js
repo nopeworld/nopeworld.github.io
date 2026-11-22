@@ -21,7 +21,11 @@ export function makeTile(group, { label, dot, cls = '' } = {}) {
       overlay.set(null);
       if (!id) { group.setSources([[video, '', posterUrl]]); return; }
       group.setSources([[video, `media/${res}/${id}.mp4`, posterUrl]]);
-      if (hasTrack) { const tr = await loadTrack(id); if (video.dataset.src.endsWith(`/${id}.mp4`)) { overlay.set(tr); overlay.draw(group.frameOf(video.currentTime)); } }
+      // the obstacle track is fetched once its clip starts loading (not for every tile when the page builds)
+      if (hasTrack) {
+        const get = async () => { const tr = await loadTrack(id); if (video.dataset.src.endsWith(`/${id}.mp4`)) { overlay.set(tr); overlay.draw(group.frameOf(video.currentTime)); } };
+        if (video.getAttribute('src') && video.getAttribute('src').endsWith(`/${id}.mp4`)) get(); else video.addEventListener('loadstart', () => { if (video.dataset.src.endsWith(`/${id}.mp4`)) get(); }, { once: true });
+      }
     },
     missing(text) { root.dataset.missing = text; root.classList.add('missing'); group.setSources([[video, '', '']]); overlay.set(null); },
   };

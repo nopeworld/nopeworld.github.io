@@ -119,7 +119,7 @@ export async function initResults() {
     t.append(body); return t;
   };
   tb.append(el('div', { class: 'tables2' }, table(gens.slice(0, 3)), table(gens.slice(3))),
-    el('p', { class: 'note', style: { marginTop: '8px' } }, 'Bold: best, underlined: second per generator (as in the paper). † concurrent work.'));
+    el('p', { class: 'note', style: { marginTop: '8px' } }, 'Bold: best, underlined: second per world model (as in the paper). † concurrent work.'));
   $$('#rview button').forEach(b => b.addEventListener('click', () => { $$('#rview button').forEach(x => x.setAttribute('aria-pressed', x === b)); const tab = b.dataset.v === 'table'; tb.hidden = !tab; $('#chartbox').hidden = tab; $('#metric').style.visibility = tab ? 'hidden' : ''; }));
   // Task 1: the decision on the true history, as a dot plot in the main chart's style: raw model vs the two modes
   const T1S = [{ key: 'raw', name: 'Raw model', color: '#d33a2c', shape: 'circle', label: 'below' },

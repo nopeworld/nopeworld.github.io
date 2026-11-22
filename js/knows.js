@@ -35,7 +35,7 @@ export async function initKnows() {
   const pickHead = svg('circle', { r: 6, fill: '#111318' });
   const pickLbl = svg('text', { 'font-size': 12.5, 'font-weight': 600, fill: '#111318' });
   fan.append(pick, pickHead, stopDot, svg('circle', { cx: O[0], cy: O[1], r: 4, fill: '#fff', stroke: '#22262e', 'stroke-width': 1.5 }), pickLbl);
-  fan.append(svg('text', { x: 8, y: 292, 'font-size': 10.5, fill: '#aab0bd' }, 'each ray: a candidate · angle to the input · length = step · colour: P̂ · opacity: Â'));
+  fan.append(svg('text', { x: 8, y: 292, 'font-size': 10.5, fill: '#aab0bd' }, 'each ray: a candidate · angle to the input · length = step · color: P̂ · opacity: Â'));
   const tauLine = el('i'); // in the strip
   const build = (names, delta, rho) => {
     gRays.innerHTML = ''; rays.length = 0; strip.innerHTML = ''; bars.length = 0;

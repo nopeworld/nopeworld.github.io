@@ -19,8 +19,8 @@ export async function initMethod() {
 // ---------- a guided tour over the paper's Fig. 2: a spotlight on one part of the figure at a time, one sentence each.
 // Regions are fractions of the figure image (1080 x 314): the training panel, then the three inference rows.
 const STEPS = [
-  { r: [0.004, 0.01, 0.326, 0.98], cap: "Training: every candidate motion is swept through Unreal's true map and labelled; the head learns to predict the labels from the frozen DiT's states." },
-  { r: [0.336, 0.155, 0.662, 0.285], cap: 'Raw model: the frozen generator follows W + ← straight through the wall.' },
+  { r: [0.004, 0.01, 0.326, 0.98], cap: "Training: every candidate motion is swept through Unreal's true map and labeled; the head learns to predict the labels from the frozen DiT's states." },
+  { r: [0.336, 0.155, 0.662, 0.285], cap: 'Raw model: the frozen world model follows W + ← straight through the wall.' },
   { r: [0.336, 0.44, 0.662, 0.265], cap: "Prediction mode: the head reads chunk k−1's states and changes the command before chunk k is drawn (+1% time)." },
   { r: [0.336, 0.69, 0.662, 0.305], cap: 'Collision mode: the head reads step 0 of chunk k; when it changes the command, only step 0 is rerun (+18% time).' },
 ];

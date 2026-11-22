@@ -250,7 +250,7 @@ export function initMotion(lenis) {
     const { wide } = ctx.conditions;
     headings(wide); rises(); statement(wide, ctx); theaters(); footer(wide);
     let undo = null;
-    if (wide) { heroScroll(); undo = strip(); stack(ctx); }   // limits: the three cards stack as you scroll
+    if (wide) { heroScroll(); undo = strip(); }
     return () => { if (undo) undo(); };
   });
   addEventListener('nope:layout', () => { window.ScrollTrigger.sort(); window.ScrollTrigger.refresh(); });
