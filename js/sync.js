@@ -67,7 +67,12 @@ export class SyncGroup {
         if (this.loop && D && this.t >= D - 0.5 / this.fps) { this.t = 0; L.forEach(it => this.snap(it.video, true)); }
         for (const it of L) { const v = it.video; this.snap(v); if (v.paused && !v.ended) v.play().catch(() => {}); }
       } else {
-        for (const it of L) if (it.video.readyState >= 3 && !it.video.paused && Math.abs(it.video.currentTime - this.t) > 0.12) this.snap(it.video, true);
+        // a clip is still buffering: hold the others still on the clock's frame (paused, one seek), instead of letting them
+        // run ahead and snapping them back every 0.12 s, which made the tiles jump back and forth while loading
+        for (const it of L) {
+          const v = it.video;
+          if (v.readyState >= 1 && !v.paused && !v.ended) { v.pause(); if (Math.abs(v.currentTime - this.t) > 0.04) this.snap(v, true); }
+        }
       }
       this.emit();
       this.raf = requestAnimationFrame(tick);

@@ -87,9 +87,9 @@ function headings(wide) {
 // ---------- blocks rise into place as they come on screen (batched, once)
 function rises() {
   const gsap = G();
-  const sel = ['.controls:not(.stage-controls)', '.split > *', '.knows > *', '.findings .finding', '.method-stage .archbox', '.mode-card', 'details.math', '.tasks .task',
+  const sel = ['.controls:not(.stage-controls)', '.split > *', '.knows > *', '.findings .finding', '.mfig', '.mpoints > li', '.mmodes', 'details.math', '.tasks .task',
     '.filters', '#bench-stats', '.chartbox', '#cmp-grid', '.cmp-below > *', '.play-wrap > *', '.bib', '.abstract', '.foot-grid'].join(',');
-  const els = $$(sel).filter(e => !e.closest('.st-pin, .t3-pin, #method-pin'));
+  const els = $$(sel).filter(e => !e.closest('.st-pin, .t3-pin'));
   gsap.set(els, { opacity: 0, y: 36 });
   window.ScrollTrigger.batch(els, { start: 'top 92%', once: true,
     onEnter: (b) => gsap.to(b, { opacity: 1, y: 0, duration: .95, ease: 'expo.out', stagger: .07, overwrite: true, clearProps: 'transform' }) });
@@ -249,7 +249,7 @@ export function initMotion(lenis) {
     const { wide } = ctx.conditions;
     headings(wide); rises(); statement(wide, ctx); theaters(); footer(wide);
     let undo = null;
-    if (wide) { heroScroll(); undo = strip(); stack(ctx); }
+    if (wide) { heroScroll(); undo = strip(); }        // the limits sit side by side now (no stacking)
     return () => { if (undo) undo(); };
   });
   addEventListener('nope:layout', () => { window.ScrollTrigger.sort(); window.ScrollTrigger.refresh(); });

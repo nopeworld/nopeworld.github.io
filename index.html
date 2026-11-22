@@ -19,6 +19,8 @@
 <link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/v2.css">
+<link rel="stylesheet" href="css/method.css">
+<link rel="stylesheet" href="css/bench.css">
 <link rel="stylesheet" href="vendor/katex.min.css" media="print" onload="this.media='all'">
 <script>
   // the intro plays once per tab session, only at the top of the page, never with reduced motion
@@ -241,51 +243,31 @@
       <h2>Read the DiT, replace unsafe actions.</h2>
       <p class="lede">Before each chunk, a head under 2&thinsp;M parameters scores 34 candidate motions on the frozen DiT: a safe input is kept, an unsafe one becomes the closest safe motion.</p>
     </div>
-  </div>
-  <div class="method-pin" id="method-pin">
-    <div class="wrap">
-      <div class="method-stage">
-        <div class="archbox"><svg class="arch" id="arch" viewBox="0 0 760 430" role="img" aria-label="NoPeWorld architecture"></svg></div>
-        <div class="steps" id="steps">
-          <div class="step" data-s="0"><div class="n">01</div><h3>Start chunk k</h3><p>Memory plus the user's command <i>u<sub>k</sub></i>. All weights frozen.</p></div>
-          <div class="step" data-s="1"><div class="n">02</div><h3>Tap the hidden states</h3><p>Mid-to-deep blocks, every token, no pooling.</p></div>
-          <div class="step" data-s="2"><div class="n">03</div><h3>Score 34 candidates</h3><p>Safety P̂, clearance and intent Â for each.</p></div>
-          <div class="step" data-s="3"><div class="n">04</div><h3>Keep or replace</h3><p>Safe input stays. Unsafe: the safe motion closest to it.</p></div>
-          <div class="step" data-s="4"><div class="n">05</div><h3>Draw the chunk</h3><p>The generator's own sampler, then chunk k+1.</p></div>
-        </div>
-      </div>
+    <figure class="mfig">
+      <a class="mfig-a" href="media/method/fig_arch_2400.webp" target="_blank" rel="noopener" aria-label="Open the method figure at full size">
+        <img id="method-fig" src="media/method/fig_arch_1080.webp" srcset="media/method/fig_arch_1080.webp 1080w, media/method/fig_arch_2400.webp 2401w"
+          sizes="(min-width: 1180px) 1080px, calc(100vw - 48px)" width="2401" height="698" decoding="async" loading="lazy"
+          alt="The paper's Figure 2. Left, training: Unreal Engine frames pass through the frozen DiT, a head reads its hidden states and predicts a score for every candidate motion; the targets come from sweeping each candidate through Unreal's true top-view map (green arrows safe, red unsafe), and a loss compares the two. Right, inference at chunk k with the W and left-arrow keys held: the frozen model alone runs DiT steps 0 to 3 and goes through the wall; in prediction mode the head reads the DiT states of chunk k minus 1 and keeps or changes the command before chunk k, and the video slides along the wall; in collision mode the head reads step 0 of chunk k, keeps the command or changes it and reruns step 0, then steps 1 to 3 follow, and the video slides along the wall."><span class="mfig-spot" aria-hidden="true"></span><span class="mfig-tag" aria-hidden="true">the paper's Fig.&nbsp;2</span>
+      </a>
+      <figcaption class="mwalk" id="mwalk">
+        <span class="mw-steps" role="group" aria-label="Walk through the figure">
+          <button type="button" data-s="0" aria-pressed="true"><i>1</i>Training</button><button type="button" data-s="1" aria-pressed="false"><i>2</i>Raw model</button><button type="button" data-s="2" aria-pressed="false"><i>3</i>Prediction mode</button><button type="button" data-s="3" aria-pressed="false"><i>4</i>Collision mode</button>
+        </span>
+        <span class="mw-cap" aria-live="polite">Training: every candidate motion is swept through Unreal's true map and labelled; the head learns to predict the labels from the frozen DiT's states.</span>
+      </figcaption>
+    </figure>
+    <ol class="mpoints">
+      <li><b><span class="mp-n">1</span>Read.</b> A head under 2&#8239;M parameters reads the frozen DiT before the chunk is drawn.</li>
+      <li><b><span class="mp-n">2</span>Score.</b> It rates 34 candidate motions for safety and intent.</li>
+      <li><b><span class="mp-n">3</span>Act.</b> Safe: keep the input. Unsafe: take the closest safe motion.</li>
+    </ol>
+    <div class="mmodes" id="method-modes">
+      <div class="mm-lab">Two modes <span class="mm-sub">added time per route
+        <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the timing">i</button><span class="info-pop" role="note">The paper's Table&nbsp;5, on LingBot-World&nbsp;2.0: 49 routes, 7 decisions each; the raw model takes 53.7&thinsp;s per route. Percentages are of that raw route.</span></span></span></div>
+      <div class="mm" data-m="collision"><div class="mm-top"><b>Collision mode</b><span class="mm-v">+9.9&thinsp;s <em>+18%</em></span></div><p>Reads step&nbsp;0 of chunk&nbsp;<i>k</i>; reruns only step&nbsp;0 when it changes the input.</p><span class="mm-bar" aria-hidden="true"><i style="width:67%"></i></span></div>
+      <div class="mm" data-m="prediction"><div class="mm-top"><b>Prediction mode</b><span class="mm-v">+0.7&thinsp;s <em>+1%</em></span></div><p>Reads the commit pass of chunk&nbsp;<i>k</i>&minus;1: no extra DiT pass.</p><span class="mm-bar" aria-hidden="true"><i style="width:5%"></i></span></div>
+      <div class="mm depth" data-m="depth"><div class="mm-top"><b>External depth</b><span class="mm-v">+14.7&thinsp;s <em>+27%</em></span></div><p>The baseline: decodes every chunk and runs a depth network (DA3) on it.</p><span class="mm-bar" aria-hidden="true"><i style="width:100%"></i></span></div>
     </div>
-  </div>
-  <div class="wrap">
-    <div class="card mode-card">
-      <div class="controls" style="margin:0 0 8px;justify-content:space-between">
-        <h3>Two modes, two places to read</h3>
-        <div class="seg dark" role="group" aria-label="Mode" id="tl-mode"><button aria-pressed="true" data-m="collision">Collision mode</button><button aria-pressed="false" data-m="prediction">Prediction mode</button></div>
-      </div>
-      <div class="timeline"><svg id="timeline" viewBox="0 0 900 300" role="img" aria-label="Where each mode reads the DiT: the frozen model, prediction mode and collision mode at chunk k"></svg></div>
-      <p class="note" id="tl-note"></p>
-    </div>
-    <div class="split even" style="margin-top:16px">
-      <div class="card" id="costs">
-        <h3>Added time per route</h3>
-        <div class="costs" id="cost-bars"></div>
-        <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the timing">i</button><span class="info-pop" role="note">LingBot-World&nbsp;2.0, 49 routes, 7 decisions each; the raw model takes 53.7&thinsp;s per route.</span></span>
-      </div>
-      <div class="card">
-        <h3>Trained on Unreal geometry only</h3>
-        <p class="note">729 replays from 44 training scenes, none shared with the benchmark.
-          <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the labels">i</button><span class="info-pop" role="note">Unreal Engine videos are replayed through the frozen DiT. Sweeping the camera's collision disc over the true occupancy map labels every candidate with its clearance and its distance from the engine's own collide-and-slide response.</span></span></p>
-        <div class="m" data-math="labels" style="margin-top:12px;font-size:15px">P = Φ((g − m)/0.03 m), A = exp(−ε²/2s²), R = P·A</div>
-      </div>
-    </div>
-    <details class="math">
-      <summary>The math <span class="more-txt">Show</span></summary>
-      <div class="eqs">
-        <div class="eq"><b>The constraint</b><div class="m" data-math="discrete">a* = argmin ε(c, u)² s.t. g(c) ≥ m</div><p>The motion closest to the engine's collide-and-slide response whose swept disc keeps a 5&thinsp;cm margin.</p></div>
-        <div class="eq"><b>The choice</b><div class="m" data-math="select">a* = u if safe and not much worse, else argmax Â over safe</div><p>Learned safety replaces the unknown map; τ, temperature and margin δ are fixed on validation scenes.</p></div>
-        <div class="eq"><b>Where H is read</b><div class="m" data-math="taps">H(pred) = f(z_{k-1}, 0); H(coll) = f(z_k^(0), t_0)</div><p>Prediction: the commit pass after chunk k−1. Collision: the first denoising step of chunk k.</p></div>
-      </div>
-    </details>
   </div>
 </section>
 
@@ -343,8 +325,8 @@
     <div class="chartbox" id="chartbox"><svg class="chart" id="chart" viewBox="0 0 900 470"></svg><div class="mlegend" id="mlegend"></div><p class="note" id="metric-note" style="margin-top:8px"></p></div>
     <div class="chartbox tablewrap" id="tablebox" hidden></div>
     <div class="split r14" style="margin-top:16px">
-      <div class="card white tablewrap"><h3>Task 1: the decision on the true history</h3><p class="note">Share of decisions, 100 routes. The raw model misses every unsafe input and changes no safe one.</p><table class="maintable" id="t1table" style="margin-top:8px"></table></div>
-      <div class="card"><h3>Open paths: does it stop for nothing?</h3><p class="note">Share of the 50 open-path videos that neither stop early nor go back.</p><div id="open-bars" class="costs" style="margin-top:10px"></div></div>
+      <div class="card white tablewrap"><h3>Task 1: the decision on the true history</h3><p class="note">Share of decisions, 100 routes. The raw model misses every unsafe input and changes no safe one.</p><div class="seg" role="group" aria-label="Task 1 metric" id="t1metric" style="margin-top:10px"></div><svg class="chart" id="t1chart" viewBox="0 0 900 300"></svg><div class="mlegend" id="t1legend"></div><p class="note" id="t1note" style="margin-top:6px"></p></div>
+      <div class="card"><h3>Open paths: does it stop for nothing?</h3><p class="note">Share of the 50 open-path videos that neither stop early nor go back.</p><svg class="chart" id="openchart" viewBox="0 0 900 300" style="margin-top:10px"></svg><div class="mlegend" id="openlegend"></div><p class="note" id="opennote" style="margin-top:6px"></p></div>
     </div>
   </div>
 </section>
@@ -457,7 +439,6 @@
 <script src="vendor/ScrollTrigger.min.js" defer></script>
 <script src="vendor/SplitText.min.js" defer></script>
 <script src="vendor/Flip.min.js" defer></script>
-<script src="vendor/DrawSVGPlugin.min.js" defer></script>
 <script src="vendor/ScrambleTextPlugin.min.js" defer></script>
 <script src="vendor/lenis.min.js" defer></script>
 <script type="module" src="js/main.js"></script>

@@ -123,7 +123,7 @@ const SECTIONS = [
   ['#problem', () => import('./problem.js').then(m => m.initProblem())],
   ['#problem .pg', () => import('./playground.js').then(m => m.initPlayground())],
   ['#knows', () => import('./knows.js').then(m => m.initKnows())],
-  ['#method', () => import('./method.js').then(m => m.initMethod())],
+  ['#method', () => import('./method.js').then(m => { m.initMethodTour(); return m.initMethod(); })],
   ['#bench', () => import('./bench.js').then(m => m.initBench())],
   ['#results', () => import('./results.js').then(m => m.initResults())],
   ['#compare', () => import('./compare.js').then(m => m.initCompare())],
