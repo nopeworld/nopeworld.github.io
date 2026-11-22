@@ -1,7 +1,7 @@
 // Boot: header, section nav, progress rail, smooth scroll, motion, links from config.js, BibTeX, equations, lazy sections.
 import { $, $$, el, json, lowData, reduceMotion } from './util.js';
 import { initMotion } from './motion.js';
-import { infoPopovers, cursorTag, magnetic, tilt } from './ui.js';
+import { infoPopovers, cursorTag, magnetic, tilt, noOrphans } from './ui.js';
 
 const CFG = window.NOPE_CONFIG || { links: {}, bibtex: {} };
 
@@ -146,5 +146,9 @@ function boot() {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
   addEventListener('load', refresh);
   Promise.allSettled(built).then(() => { magnetic(); tilt(); });
+  // headlines without a one-word last line, once the fonts and every section are in, and again after a resize
+  const orphans = () => { if (noOrphans()) dispatchEvent(new Event('nope:layout')); };
+  Promise.allSettled([...built, document.fonts ? document.fonts.ready : null]).then(() => requestAnimationFrame(orphans));
+  let rz = 0; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(orphans, 250); });
 }
 boot();

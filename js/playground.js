@@ -40,9 +40,18 @@ export async function initPlayground() {
   let cam, ghost, yaw, trailC, trailG, contact = 0;
   const reset = () => { cam = [0, 0]; ghost = [0, 0]; yaw = 0; trailC = [[0, 0]]; trailG = [[0, 0]]; contact = 0; };
   reset();
-  // view: the route's area
-  let [u0, u1, v0, v1] = d.extent; const cu = (u0 + u1) / 2, cv = (v0 + v1) / 2; const span = Math.max(u1 - u0, (v1 - v0) * 4 / 3) * 0.62;
-  const view = { cu, cv: cv + 0.3, span };
+  // view: fitted at every frame to the start, the input, Unreal's path and both cameras (with a margin), so the start and
+  // the cameras never leave the frame; it only zooms out as far as the cameras wander
+  const near = (P) => P.filter(([u, v]) => Math.hypot(u, v) < 8);
+  const base = [[0, 0], ...near(d.intent.p), ...near(d.unreal.p)];
+  const view = { cu: 0, cv: 0, span: 6 };
+  const fit = (W, H) => {
+    let a = [1e9, -1e9, 1e9, -1e9];
+    for (const [u, v] of [...base, cam, ghost]) a = [Math.min(a[0], u), Math.max(a[1], u), Math.min(a[2], v), Math.max(a[3], v)];
+    const m = 1.1, w = Math.max(3, a[1] - a[0] + 2 * m), h = Math.max(3, a[3] - a[2] + 2 * m);
+    const s = Math.min(W / w, H / h);
+    view.cu = (a[0] + a[1]) / 2; view.cv = (a[2] + a[3]) / 2; view.span = W / s;
+  };
   const collide = (p) => {
     let touched = false;
     for (let it = 0; it < 4; it++) {
@@ -97,7 +106,7 @@ export async function initPlayground() {
   const draw = () => {
     const r = c.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
     const W = Math.round(r.width * dpr), H = Math.round(r.height * dpr); if (c.width !== W || c.height !== H) { c.width = W; c.height = H; }
-    const s = W / view.span; const X = (u) => W / 2 + (u - view.cu) * s, Y = (v) => H / 2 - (v - view.cv) * s;
+    fit(W, H); const s = W / view.span; const X = (u) => W / 2 + (u - view.cu) * s, Y = (v) => H / 2 - (v - view.cv) * s;
     ground(ctx, W, H, X, Y, s, dpr, view.cu, view.cv);
     solids(ctx, d.map, X, Y, dpr);
     obstacle(ctx, d.obstacle, X, Y, dpr);

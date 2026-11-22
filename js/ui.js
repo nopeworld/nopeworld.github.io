@@ -83,3 +83,32 @@ export function tilt(sel = '.task') {
     c.addEventListener('pointerleave', () => { c.style.transform = ''; });
   }
 }
+
+// ---------- headlines never end on a line with one word: shrink the headline (down to 85%) until that word joins the line
+// above; if it cannot, balance the lines instead. Measured on the words as laid out (SplitText's word boxes when split).
+function lineWords(h) {
+  const tops = [];
+  const ws = h.querySelectorAll('.w');
+  if (ws.length) for (const w of ws) tops.push(Math.round(w.getBoundingClientRect().top));
+  else {
+    const walk = document.createTreeWalker(h, NodeFilter.SHOW_TEXT); let n;
+    while ((n = walk.nextNode())) { const re = /\S+/g; let m; while ((m = re.exec(n.textContent))) { const r = document.createRange(); r.setStart(n, m.index); r.setEnd(n, m.index + 1); const b = r.getBoundingClientRect(); if (b.width) tops.push(Math.round(b.top)); } }
+  }
+  const lines = []; for (const t of tops) { const l = lines.find(x => Math.abs(x.t - t) < 6); if (l) l.n++; else lines.push({ t, n: 1 }); }
+  return lines.sort((a, b) => a.t - b.t);
+}
+export function noOrphans(sel = '.head h2, .pg-side h3, .finding .k, .task h3, .limit h3, .tagline') {
+  let changed = false;
+  for (const h of $$(sel)) {
+    const before = h.style.fontSize;
+    h.style.fontSize = ''; h.style.textWrap = '';
+    let L = lineWords(h);
+    if (L.length < 2 || L[L.length - 1].n > 1) { if (before) changed = true; continue; }
+    const base = parseFloat(getComputedStyle(h).fontSize), n0 = L.length;
+    let ok = false;
+    for (let f = 0.98; f >= 0.849; f -= 0.01) { h.style.fontSize = (base * f).toFixed(2) + 'px'; L = lineWords(h); if (L.length < n0 && (L.length < 2 || L[L.length - 1].n > 1)) { ok = true; break; } }
+    if (!ok) { h.style.fontSize = ''; h.style.textWrap = 'balance'; }
+    changed = true;
+  }
+  return changed;
+}

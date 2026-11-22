@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Non-penetrating World Models</title>
-<meta name="description" content="Video world models pass through obstacles. Their frozen DiT already predicts the contact; NoPeWorld, a small head on its hidden states, replaces unsafe actions with the closest safe ones. NoPeBench evaluates six generators.">
+<meta name="description" content="Teaching world models to say NoPe. Video world models pass through obstacles; their frozen DiT already predicts the contact; NoPeWorld, a small head on its hidden states, replaces unsafe actions with the closest safe ones. NoPeBench evaluates six generators.">
 <meta name="theme-color" content="#ffffff">
 <meta name="referrer" content="no-referrer">
 <meta name="author" content="Yuhang Dai, Yinwei Wu, Ziyue Lin, Han Ji, Xingyi Yang">
 <meta property="og:title" content="Non-penetrating World Models">
-<meta property="og:description" content="Video world models pass through obstacles. NoPeWorld makes them stop or slide; NoPeBench measures it.">
+<meta property="og:description" content="Teaching world models to say NoPe: to any command, and any frame, that would pass through an obstacle. NoPeWorld and NoPeBench.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://nopeworld.github.io/media/og.jpg">
 <meta property="og:url" content="https://nopeworld.github.io/">
@@ -32,7 +32,7 @@
 
 <div class="intro" id="intro" aria-hidden="true">
   <svg class="intro-mark" viewBox="0 0 26 26"><rect class="iw" x="18" y="2" width="5" height="22" rx="1.5" fill="#f2c200"/><g class="ic"><circle cx="11.5" cy="13" r="6.5" fill="#fff" stroke="#111318" stroke-width="2.2"/><path d="M11.5 13 L17.6 9.6 L17.6 16.4 Z" fill="#111318" opacity=".85"/></g></svg>
-  <div class="intro-word">obstacles stay solid</div>
+  <div class="intro-word">teaching world models to say nope</div>
 </div>
 
 <header class="header" id="header">
@@ -75,7 +75,7 @@
     <div class="hero-top">
       <h1 class="title" id="title"><span class="t1"><span class="np">Non-</span><span class="pen">penetrating</span></span> <span class="t2">World Models</span></h1>
       <div class="hero-side">
-        <p class="tagline"><span>World models pass through obstacles.</span> <span>NoPeWorld makes them stop or slide.</span></p>
+        <p class="tagline"><span>Teaching world models to say <b class="nope">NoPe</b>.</span> <span>To any command, and any frame, that would pass through an obstacle.</span></p>
         <p class="authors"><span data-cfg="authors"><span class="nm">Yuhang Dai</span>, <span class="nm">Yinwei Wu</span>, <span class="nm">Ziyue Lin</span>, <span class="nm">Han Ji</span>, <span class="nm">Xingyi Yang<a class="corr" href="mailto:xingyi.yang@polyu.edu.hk" title="Corresponding author" aria-label="Corresponding author: e-mail"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/><path d="M3 5.5l7 5.5 7-5.5"/></svg></a></span></span><span class="affil" data-cfg="affil">Learning &amp; Generation Lab, The Hong Kong Polytechnic University</span></p>
         <div class="links" id="links"></div>
       </div>
@@ -162,7 +162,7 @@
       <button class="iconbtn" id="prob-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
       <label class="toggle"><input type="checkbox" id="prob-ov" checked> Obstacle (SAM&nbsp;2)</label>
       <div class="scrub"><input type="range" id="prob-scrub" min="0" max="1000" value="0" aria-label="Time"><span class="time" id="prob-time">0.00 s</span></div>
-      <span class="infobox"><button class="info" aria-expanded="false" aria-label="How to read this">i</button><span class="info-pop" role="note">Unreal Engine, the ground truth, slides along the wall. Five of six raw generators pass through it; WorldPlay2 backs away. With NoPeWorld every one stops at the wall. <b>Chips</b> are the Task&nbsp;2 evaluator's verdict on that exact video. <b>Yellow</b> is the evaluator's SAM&nbsp;2.1 track of the wall, started from Unreal's true mask; it ends once SAM&nbsp;2 loses the wall (no mask for 0.25&thinsp;s, or the mask collapsing as a camera enters it), which also happens when a camera slides past or backs away. The chip, not the overlay, is the verdict.</span></span>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="How to read this">i</button><span class="info-pop" role="note">The paper's Fig.&nbsp;1. Unreal Engine, the ground truth, slides along the wall. Five of six raw generators pass through it; WorldPlay2 backs away. With NoPeWorld every one stops at the wall. <b>Chips</b> are the Task&nbsp;2 evaluator's verdict on that exact video. <b>Yellow</b> is the evaluator's SAM&nbsp;2.1 track of the wall, started from Unreal's true mask; it ends once SAM&nbsp;2 loses the wall (no mask for 0.25&thinsp;s, or the mask collapsing as a camera enters it), which also happens when a camera slides past or backs away. The chip, not the overlay, is the verdict.</span></span>
     </div>
     <div class="split prob-split">
       <div class="sweep-host"><div class="grid7" id="prob-grid"></div><div class="sweep" aria-hidden="true"></div></div>
@@ -309,7 +309,7 @@
     <div class="stats" id="bench-stats"></div>
     <div class="cards" id="cards"></div>
     <div class="more"><button class="btn" id="more">Show more routes</button>
-      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the explorer">i</button><span class="info-pop" role="note">All 150 Task&nbsp;2 routes, unfiltered: the evaluator's verdict for every generator and method (VGGT-Ω, rule v3.1), the true map and every reconstructed camera path. Task&nbsp;1 runs on the same 100 collision routes, teacher-forced on Unreal's history, in 32 held-out scenes. Clips here are small previews (raw and collision mode; open paths: collision mode). A path whose history part misses the true history by more than 15&thinsp;cm is not drawn, as in the paper's figures (207 of 3,400).</span></span></div>
+      <span class="infobox"><button class="info" aria-expanded="false" aria-label="About the explorer">i</button><span class="info-pop" role="note">All 150 Task&nbsp;2 routes, unfiltered: the evaluator's verdict for every generator and method (VGGT-Ω, rule v3.1), the true map and every reconstructed camera path. Task&nbsp;1 runs on the same 100 collision routes, teacher-forced on Unreal's history, in 32 held-out scenes. Clips here are small previews (raw and collision mode; open paths: collision mode). A path whose history part misses the true history by more than 15&thinsp;cm is not drawn, as in the paper's figures (226 of 3,400).</span></span></div>
   </div>
   <dialog class="viewer" id="viewer" aria-label="Route viewer">
     <div class="vhead"><h3 id="v-title">Route</h3><div class="seg" role="group" aria-label="Generator" id="v-gen"></div><button class="iconbtn" id="v-close" aria-label="Close"><svg viewBox="0 0 16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg></button></div>
@@ -422,7 +422,7 @@
     <div class="head">
       <span class="eyebrow"><span class="chap">08</span>Limits</span>
       <h2>Limitations.</h2>
-      <p class="lede">NoPeWorld chooses the motion; the generator still has to render it.</p>
+      <p class="lede">These are limits of the generators themselves: NoPeWorld chooses the motion, the generator still has to render it.</p>
     </div>
     <div class="limits" id="limits-grid"></div>
   </div>
@@ -442,7 +442,7 @@
 
 <footer>
   <div class="wrap">
-    <div class="foot-big" aria-hidden="true"><span>Stop or slide.</span><span class="fb2">Never pass through.</span></div>
+    <div class="foot-big" aria-hidden="true"><span>Say NoPe.</span><span class="fb2">Never pass through.</span></div>
     <div class="foot-grid">
       <div>Every clip is a real output of the named model on the named input. Verdicts and numbers come from the paper's evaluators and result files.</div>
       <div>Generators used frozen, as released: LingBot-World 2.0, HY-WorldPlay, Echo-WM, Evoke-Turbo, WorldPlay2 and Hy-Nomas (the last two concurrent work). Scenes from UnrealZoo; static Task 3 images from WBench.</div>

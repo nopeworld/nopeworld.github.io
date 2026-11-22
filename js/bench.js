@@ -58,7 +58,7 @@ export async function initBench() {
       const v = rate(rs, m); if (!v) continue;
       statsEl.append(el('div', { class: `stat ${cls}` }, el('div', { class: 'v' }, `${v[0]}%`), el('div', { class: 'l' }, `violate · ${name}`)));
     }
-    statsEl.append(el('div', { class: 'stat wide', style: { flex: 1, minWidth: '200px' }, title: 'Task 2 evaluator verdicts on the routes shown.' },
+    statsEl.append(el('div', { class: 'stat wide', style: { flex: 1, minWidth: '200px' }, title: "Task 2 evaluator verdicts on the routes shown. With no filter the rates equal the paper's table." },
       el('div', { class: 'l' }, `${GEN_NAME[st.gen]} · verdicts on the routes shown`)));
     // cards are kept per route and generator, so a filter change can move them (FLIP) instead of rebuilding them
     const gs = window.gsap, F2 = window.Flip, animate = gs && F2 && !reduceMotion && lastGen === st.gen && cardsEl.childElementCount;

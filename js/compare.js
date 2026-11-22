@@ -12,17 +12,22 @@ export async function initCompare() {
   const B = await getBench(), C = await getClips();
   const cats = B.categories;
   const R = Object.fromEntries(B.routes.map(r => [r.id, r]));
+  // a figure shown here (bench.json figures, where 'compare'): its raw and collision tiles, chips and paths are the paper figure's own
+  const figOf = (id) => Object.keys(B.figures || {}).find(k => B.figures[k].where === 'compare' && B.figures[k].case === id) || null;
+  // generators with a 'slid' verdict in either NoPeWorld mode on a route (the title of the shared-slide entry follows the data)
+  const nSlid = (id) => GEN.filter(x => ['collision', 'prediction'].some(m => R[id].res[x][m]?.[0] === 'slid')).length;
+  const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six'];
   const cases = [
     { id: B.teaser, title: 'The teaser route', sub: 'W + A into an oblique wall' },
-    { id: B.task2_fig, title: 'A head-on pillar', sub: 'W straight at a stone block' },
-    { id: 'ModularGothic_Day__n001', title: 'Slides on four models', sub: 'W + turn along a balustrade' },
-    ...GEN.map(g => { const [id, m] = B.best_slide[g]; return { id, gen: g, mode: m, title: `Best slide · ${GEN_SHORT[g]}`, sub: (R[id].name || '').replace(/^(a|an|the) /i, '') }; })
+    { id: B.task2_fig, fig: figOf(B.task2_fig), title: 'A head-on pillar', sub: 'W straight at a stone block' },
+    { id: 'ModularGothic_Day__n001', title: `Slides on ${WORD[nSlid('ModularGothic_Day__n001')]} models`, sub: 'W + turn along a balustrade' },
+    ...GEN.filter(g => B.best_slide[g]).map(g => { const [id, m] = B.best_slide[g]; return { id, gen: g, mode: m, title: `Best slide · ${GEN_SHORT[g]}`, sub: (R[id].name || '').replace(/^(a|an|the) /i, '') }; })
       .filter((c, i, a) => a.findIndex(x => x.id === c.id && x.gen === c.gen) === i),
   ];
   const bar = $('#casebar');
-  let route = cases[0].id, gen = 'lingbot', mode = 'collision';
+  let route = cases[0].id, fig = cases[0].fig || null, gen = 'lingbot', mode = 'collision';
   cases.forEach((c, i) => bar.append(el('button', { class: 'casebtn', 'aria-pressed': i === 0, onclick: (e) => {
-    $$('.casebtn', bar).forEach(b => b.setAttribute('aria-pressed', b === e.currentTarget)); route = c.id; if (c.gen) { gen = c.gen; mode = c.mode; } apply(); } },
+    $$('.casebtn', bar).forEach(b => b.setAttribute('aria-pressed', b === e.currentTarget)); route = c.id; fig = c.fig || null; if (c.gen) { gen = c.gen; mode = c.mode; } apply(); } },
     el('img', { src: `media/posters/${c.id}_s.webp`, alt: '', loading: 'lazy', width: 320, height: 180 }), el('span', {}, el('b', {}, c.title), el('em', {}, c.sub)))));
   const gseg = $('#cmp-gen');
   GEN.forEach(x => gseg.append(el('button', { 'aria-pressed': x === gen, 'data-g': x, onclick: () => { gen = x; apply(); } }, GEN_SHORT[x])));
@@ -53,8 +58,10 @@ export async function initCompare() {
     const t0 = g.time;
     $$('button', gseg).forEach(b => b.setAttribute('aria-pressed', b.dataset.g === gen));
     $$('#cmp-mode button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === mode));
-    const r = R[route], res = r.res[gen];
-    const id = (m) => `${route}__${gen}__${m}`;
+    const r = R[route], F = fig ? B.figures[fig] : null;
+    const vq = (x, m) => F?.res[x]?.[m] || r.res[x][m];           // the figure's own verdict where it has that tile, else the route's
+    const res = Object.fromEntries(['raw', 'depth', 'collision', 'prediction'].map(m => [m, vq(gen, m)]));
+    const id = (m) => F?.res[gen]?.[m] ? `${F.prefix}__${gen}__${m}` : `${route}__${gen}__${m}`;
     const P = `media/posters/${route}.webp`;
     tiles.unreal.setClip(C[`${route}__unreal`] ? `${route}__unreal` : null, 'hi', P, C[`${route}__unreal`]?.track);
     for (const [k, m] of [['raw', 'raw'], ['depth', 'depth'], ['ours', mode]]) {
@@ -66,7 +73,7 @@ export async function initCompare() {
     tiles.raw.setLabel(`${GEN_SHORT[gen]} · raw`, 'raw'); tiles.depth.setLabel(`${GEN_SHORT[gen]} · external depth`, 'depth');
     tiles.ours.setLabel(`${GEN_SHORT[gen]} · NoPeWorld (${mode === 'collision' ? 'Coll' : 'Pred'})`, 'ours');
     Object.values(tiles).forEach(t => t.overlay.setOn(ov.checked));
-    const d = await loadTop(route);
+    const d = await loadTop(F ? F.top : route);
     top.set(d, keysFor(gen, ['raw', 'depth', mode]));
     const ct = top.contactTime(), tick = $('#cmp-tick');
     if (ct != null) { tick.hidden = false; tick.style.left = `calc(${(ct / 5.0625) * 100}% - 1px)`; } else tick.hidden = true;
@@ -79,7 +86,7 @@ export async function initCompare() {
     tb.append(el('thead', {}, el('tr', {}, el('th', {}, ''), el('th', {}, 'Raw'), el('th', {}, 'Ext. depth'), el('th', {}, 'Coll'), el('th', {}, 'Pred'))));
     const body = el('tbody');
     for (const x of GEN) body.append(el('tr', { class: x === gen ? 'sel' : '', style: { cursor: 'pointer' }, onclick: () => { gen = x; apply(); } }, el('td', {}, GEN_SHORT[x]),
-      ...['raw', 'depth', 'collision', 'prediction'].map(m => { const q = r.res[x][m]; return el('td', {}, q ? chip(q[0], cats) : '–'); })));
+      ...['raw', 'depth', 'collision', 'prediction'].map(m => { const q = vq(x, m); return el('td', {}, q ? chip(q[0], cats) : '–'); })));
     tb.append(body); info.append(el('div', { class: 'tablewrap' }, tb));
     if (pick) info.append(el('p', { class: 'note', style: { marginTop: '8px' } }, `Picked by a fixed rule for ${GEN_NAME[gen]}. `,
       infoBox(`The clean slides with NoPeWorld (no violation, no going back, a slide of at least 0.5 m and at most 1.5× Unreal's), ranked by the raw model passing through, external depth not sliding, and the share of Unreal's slide.`, 'How this route was picked')));

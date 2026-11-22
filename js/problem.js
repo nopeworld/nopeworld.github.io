@@ -6,7 +6,8 @@ import { TopView, loadTop } from './topview.js';
 
 export async function initProblem() {
   const B = await getBench(), C = await getClips();
-  const route = B.teaser;
+  // the paper's Fig. 1: its own clips (ids F.prefix__<generator>__<mode>), verdicts and top view, from before the rerun
+  const F = B.figures.fig1, route = F.case;
   const g = new SyncGroup({ fps: 16 });
   const grid = $('#prob-grid');
   const tiles = {};
@@ -14,8 +15,7 @@ export async function initProblem() {
   $('#prob-unreal').append(unreal.root);
   for (const m of GEN) { tiles[m] = makeTile(g, { label: GEN_NAME[m], dot: 'raw' }); grid.append(tiles[m].root); }
   const top = new TopView($('#prob-top canvas'));
-  const tv = await loadTop(route);
-  const R = B.routes.find(r => r.id === route);
+  const tv = await loadTop(F.top);
   // the 3D map replaces the flat top view once three.js has loaded (not in low-data mode; the 2D view stays as fallback)
   let map3 = null, keys3 = null;
   whenNear($('#prob-top'), async () => {
@@ -33,10 +33,10 @@ export async function initProblem() {
   const apply = async () => {
     unreal.setClip(`${route}__unreal`, 'hi', `media/posters/${route}.webp`, C[`${route}__unreal`]?.track);
     for (const m of GEN) {
-      const id = `${route}__${m}__${mode}`;
+      const id = `${F.prefix}__${m}__${mode}`;
       tiles[m].setLabel(GEN_NAME[m], mode === 'raw' ? 'raw' : 'ours');
       tiles[m].setClip(C[id] ? id : null, 'hi', `media/posters/${route}.webp`, C[id]?.track);
-      const r = R.res[m][mode];
+      const r = F.res[m]?.[mode];
       tiles[m].setVerdict(r ? chip(r[0], B.categories) : null);
       tiles[m].root.onmouseenter = () => { top.highlight(`${m}|${mode}`); map3?.highlight(`${m}|${mode}`); };
       tiles[m].root.onmouseleave = () => { top.highlight(null); map3?.highlight(null); };
