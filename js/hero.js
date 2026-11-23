@@ -1,5 +1,7 @@
-// Hero: Platform 9 3/4 wipe, raw (left) vs + NoPeWorld (right), one clock; drag the wall to wipe.
-import { $, $$, clamp, onVisible, getClips } from './util.js';
+// Hero: raw (left) vs + NoPeWorld (right) on one clock; drag the wall to wipe. Two scenes (js/hero_scenes.js): Platform 9 3/4
+// in Day and Night, the GTA VI streets in the GTA look; the look switch brings its scene, the stage's own switch changes the scene alone.
+import { $, $$, el, clamp, onVisible, getClips } from './util.js';
+import { SCENES } from './hero_scenes.js';
 import { SyncGroup, wirePlayer } from './sync.js';
 import { Overlay, loadTrack } from './overlay.js';
 
@@ -23,6 +25,7 @@ export function wipe(stage, group) {
 }
 
 export function initHero() {
+  const d = document.documentElement;
   const stage = $('#hero-stage');
   const g = new SyncGroup({ fps: 16 });
   const [vl, vr] = $$('video', stage);
@@ -51,25 +54,64 @@ export function initHero() {
     }
   };
   g.add(vl, draw); g.add(vr, draw);
-  const setSeed = async (s) => {
-    const was = g.playing;
-    g.setSources([[vl, `media/hero/p934__lingbot__raw__s${s}.mp4`, `media/posters/p934__lingbot__raw__s${s}.webp`],
-                  [vr, `media/hero/p934__lingbot__collision__s${s}.mp4`, `media/posters/p934__lingbot__collision__s${s}.webp`]]);
-    const C = await getClips(), a = `p934__lingbot__raw__s${s}`, b = `p934__lingbot__collision__s${s}`;
-    trL = C[a]?.track ? await loadTrack(a) : null; trR = C[b]?.track ? await loadTrack(b) : null;
-    $('#hero-ov').disabled = !(trL && trR);
-    $('#hero-ov').parentElement.title = trL && trR ? '' : 'Tracking for this seed is still being computed';
-    if (was) g.play();
+  // scenes and their items; an item without clips (still being generated) shows only with ?draft, as its real first frame
+  const draft = /(^\?|&)draft(=|&|$)/.test(location.search);
+  const scenes = SCENES.map(sc => ({ ...sc, items: sc.items.filter(it => it.raw || draft) })).filter(sc => sc.items.length);
+  const seeds = $('#hero-seeds'), sceneSeg = $('#hero-scene'), cap = $('.stage-controls .cap'), pop = $('.stage-controls .info-pop'), hud = $('.hud', stage);
+  const ovBox = $('#hero-ov'), playBtn = $('#hero-play');
+  let scene = null, item = null, token = 0;
+  const tagL = $('.tag.l', stage), tagR = $('.tag.r', stage), TAGS = [tagL.lastChild.textContent, tagR.lastChild.textContent];
+  const setItem = async (it) => {
+    const my = ++token, resume = g.playing || (item && !item.raw);
+    item = it;
+    $$('button', seeds).forEach(x => x.setAttribute('aria-pressed', String(x.dataset.item === it.id)));
+    hud.replaceChildren(...[...it.keys].map(k => el('span', { class: 'key on', text: k })), ...(it.hold ? [el('span', { text: it.hold })] : []));
+    stage.classList.toggle('pending', !it.raw); playBtn.disabled = !it.raw;
+    const c = it.cap ?? scene.cap; cap.innerHTML = c || ''; cap.hidden = !c;      // no caption line at all where there is none
+    stage.setAttribute('aria-label', it.model ? `${scene.aria}: ${it.model}` : scene.aria);
+    if (!it.raw) {            // the real first frame on both sides, nothing to play
+      g.pause(); trL = trR = null; ovBox.disabled = true; ovBox.checked = false; show = false; ovBox.parentElement.hidden = true;
+      const p = `${scene.media}posters/${it.poster}.webp`;
+      g.setSources([[vl, null, p], [vr, null, p]]); vl.poster = p; vr.poster = p;
+      draw(); return;
+    }
+    const M = scene.media;
+    g.setSources([[vl, `${M}hero/${it.raw}.mp4`, `${M}posters/${it.raw}.webp`], [vr, `${M}hero/${it.ours}.mp4`, `${M}posters/${it.ours}.webp`]]);
+    const C = await getClips();
+    const tl = C[it.raw]?.track ? await loadTrack(it.raw) : null, tr = C[it.ours]?.track ? await loadTrack(it.ours) : null;
+    if (my !== token) return;
+    trL = tl; trR = tr;
+    ovBox.disabled = !(trL && trR);
+    if (ovBox.disabled) { ovBox.checked = false; show = false; }
+    ovBox.parentElement.hidden = !(trL && trR);           // the obstacle toggle only where there is a track (no dead control, no small text)
+    if (resume) g.play();
     draw();
   };
-  $$('#hero-seeds button').forEach(b => b.addEventListener('click', () => {
-    $$('#hero-seeds button').forEach(x => x.setAttribute('aria-pressed', x === b)); setSeed(b.dataset.seed);
+  const setScene = (sc) => {
+    if (!sc || sc === scene) return;
+    scene = sc; d.dataset.scene = sc.id;
+    $$('button', sceneSeg).forEach(x => x.setAttribute('aria-pressed', String(x.dataset.scene === sc.id)));
+    seeds.setAttribute('aria-label', sc.id === 'p934' ? 'Seed' : 'Place');
+    seeds.replaceChildren(...sc.items.map(it => {
+      const b = el('button', { 'aria-pressed': 'false', 'data-item': it.id, 'data-seed': it.seed, text: it.label });
+      b.addEventListener('click', () => setItem(it)); return b;
+    }));
+    pop.innerHTML = sc.info; stage.setAttribute('aria-label', sc.aria);
+    tagL.lastChild.textContent = (sc.tags || TAGS)[0]; tagR.lastChild.textContent = (sc.tags || TAGS)[1];
+    setItem(sc.items[0]);
+  };
+  sceneSeg.replaceChildren(...scenes.map(sc => {
+    const b = el('button', { 'aria-pressed': 'false', 'data-scene': sc.id, text: sc.label });
+    b.addEventListener('click', () => setScene(sc)); return b;
   }));
+  sceneSeg.hidden = scenes.length < 2;
+  const forTheme = (t) => scenes.find(sc => sc.looks.includes(t)) || scenes[0];
+  addEventListener('nope:theme', (e) => setScene(forTheme(e.detail)));
   $('#hero-ov').addEventListener('change', (e) => { show = e.target.checked; draw(); });
   const setCut = wipe(stage, g);
   new MutationObserver(draw).observe(stage, { attributes: true, attributeFilter: ['style'] });
   wirePlayer(g, { button: $('#hero-play') });
-  setSeed(1);
+  setScene(forTheme(d.dataset.theme));
   onVisible(stage, (v) => g.setVisible(v));
   g.play();
   heroApi.group = g; heroApi.setCut = setCut; resolveHero(heroApi);

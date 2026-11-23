@@ -18,6 +18,9 @@ window.NOPE_CONFIG = {
     { name: "Xingyi Yang", corresponding: "xingyi.yang@polyu.edu.hk" }
   ],
   affiliations: "Learning & Generation Lab, The Hong Kong Polytechnic University",
+  // where the GTA VI clips and their first frames live: "" = this site's media/ folder; or another origin's base URL ending
+  // in "/" that holds hero/ and posters/ under the same names (kept apart so a takedown request touches only them)
+  gta_media: "",
   // the promotional video after the abstract. On play the page tries YouTube; where YouTube cannot be reached (a thumbnail
   // does not load within 2.5 s, e.g. mainland China) it plays Bilibili if set, else our own file. Nothing loads before play.
   video_youtube: "dS64U7_3GQs",       // https://youtu.be/dS64U7_3GQs

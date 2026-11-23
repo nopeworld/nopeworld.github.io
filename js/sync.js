@@ -63,8 +63,13 @@ export class SyncGroup {
       const dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
       if (ready) {
         this.t += dt * this.rate;
+        // a slow main thread (dt is capped at 0.1 s a frame) lets the clips run ahead of the clock together: follow them instead
+        // of pulling them all back (that made a busy page's clips jump back every second)
+        const ts = L.filter(it => !it.video.paused && !it.video.ended).map(it => it.video.currentTime);
+        if (ts.length === L.length) { const lo = Math.min(...ts); if (lo > this.t + 0.12 && lo < this.t + 2 && Math.max(...ts) - lo < 0.12) this.t = lo; }
         const D = this.duration;
-        if (this.loop && D && this.t >= D - 0.5 / this.fps) { this.t = 0; L.forEach(it => this.snap(it.video, true)); }
+        // loop at the shortest clip's end, or at once when every clip has ended (they can end before a slow clock gets there)
+        if (this.loop && D && (this.t >= D - 0.5 / this.fps || L.every(it => it.video.ended))) { this.t = 0; L.forEach(it => this.snap(it.video, true)); }
         for (const it of L) { const v = it.video; this.snap(v); if (v.paused && !v.ended) v.play().catch(() => {}); }
       } else {
         // a clip is still buffering: hold the others still on the clock's frame (paused, one seek), instead of letting them

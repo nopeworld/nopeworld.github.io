@@ -1,0 +1,425 @@
+/* The GTA look (user 11-23): a third look beside Day (the paper's page) and Night (Harry Potter). Vice-style dusk: a deep
+   navy page, a sunset in the hero with palms against it, neon pink and teal, a retro motel key tag in the ticket's place.
+   Appearance only: the sections' content, text and motion stay as they are. Every rule here is scoped to
+   [data-theme="gta"] or to the GTA intro (html.intro-gta, .gta-intro), so Day and Night are untouched.
+   Data keep their colours: raw red, NoPeWorld green, the obstacle yellow (--wall), Unreal ink; maps stay white paper.
+   Original drawings only (assets/gta/*.svg); lettering in Anton (SIL OFL, assets/gta/OFL-Anton.txt); no game logos,
+   wordmarks or fonts. Palms sway only on screen (js/gta_intro.js runs them), never with reduced motion. */
+@font-face { font-family: "Anton"; src: url("../assets/gta/anton-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* the look's page colour, read by theme.js for the switch's disc and the browser's theme-color */
+:root { --look-bg-gta: #0b1322; }
+
+/* =================================================================== tokens */
+[data-theme="gta"] {
+  color-scheme: dark;
+  --bg: #0b1322; --surface: #131e34; --panel: rgba(34, 52, 88, .6); --panel-2: rgba(46, 68, 108, .74); --line: rgba(150, 205, 255, .13); --line-2: rgba(150, 205, 255, .26);
+  --ink: #fbf5ef; --ink-2: #d7dde9; --ink-3: #a3b0c6; --ink-4: #6c7a93;
+  --wall: #f2c200; --wall-soft: rgba(242, 194, 0, .15); --wall-ink: #ffd84d;
+  --raw-soft: rgba(211, 58, 44, .22); --ours-soft: rgba(30, 158, 90, .22); --depth-soft: rgba(59, 107, 255, .22);
+  --gold: #ff8a3d; --gold-hi: #ffd36b; --gold-lo: #c2410c; --burgundy: #ff3d8b; --burgundy-2: #ff5c9e;
+  --gold-bar: linear-gradient(180deg, #ffe07a 0%, #ff9a3c 36%, #ff5a6a 70%, #ff3d8b 100%);
+  --serif: "Anton", "Archivo", "Inter", sans-serif;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 44px rgba(0, 0, 0, .5);
+  --map-paper: #ffffff;             /* mapdraw.js paints white outside Night */
+  --card-glow: 0 0 0 1px rgba(255, 92, 158, .14), 0 0 46px -16px rgba(46, 230, 214, .2), 0 22px 60px -28px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .05);
+  --gta-pink: #ff3d8b; --gta-pink-hi: #ff6fab; --gta-orange: #ff8a3d; --gta-sun: #ffd36b; --gta-teal: #2ee6d6; --gta-teal-ink: #5ff0e2;
+  --gta-sunset: linear-gradient(90deg, #ff3d8b 0%, #ff6a4a 52%, #ffa03a 100%);
+}
+[data-theme="gta"] body { background-color: var(--bg);
+  background-image: radial-gradient(140vw 70vw at 50% -20vw, rgba(40, 110, 170, .2), rgba(40, 110, 170, 0) 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .7 0 0 0 0 .85 0 0 0 0 1 0 0 0 .035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, repeat; }
+/* the city's light down the page: pink from the left, teal from the right, in turns (painted once, nothing moves) */
+[data-theme="gta"] main { background-image: radial-gradient(38% 760px at 0% 32%, rgba(255, 61, 139, .1), rgba(255, 61, 139, 0) 72%),
+    radial-gradient(38% 760px at 100% 78%, rgba(46, 230, 214, .085), rgba(46, 230, 214, 0) 72%);
+  background-size: 100% 1900px; background-repeat: repeat-y; background-position: 0 1100px; }
+/* cards carry a neon edge along the top */
+[data-theme="gta"] :is(.task, .fanbox, .archbox, .chartbox, .abstract) { background-image: linear-gradient(90deg, rgba(255, 61, 139, .9), rgba(255, 138, 61, .9) 50%, rgba(46, 230, 214, .9));
+  background-size: 100% 2px; background-repeat: no-repeat; background-position: 0 0; }
+[data-theme="gta"] ::selection { background: rgba(255, 61, 139, .45); color: #fff; }
+
+/* =================================================================== section heads: neon on the dusk */
+[data-theme="gta"] .head .eyebrow, [data-theme="gta"] .pg-side .eyebrow { font-family: var(--serif); font-weight: 400; font-synthesis: none; letter-spacing: .14em; color: var(--gta-teal-ink); }
+[data-theme="gta"] .head .eyebrow .chap, [data-theme="gta"] .pg-side .eyebrow .chap { background: var(--gta-sunset); color: #1a0610; box-shadow: 0 0 16px rgba(255, 61, 139, .45); }
+[data-theme="gta"] h2, [data-theme="gta"] .pg-side h3, [data-theme="gta"] .foot-big span:first-child { text-shadow: 0 0 30px rgba(255, 61, 139, .24), 0 0 2px rgba(255, 200, 225, .14); }
+[data-theme="gta"] .head h2::before, [data-theme="gta"] .foot-big::after, [data-theme="gta"] .hero .title .np::after { background: var(--gold-bar); box-shadow: 0 0 10px rgba(255, 79, 152, .85), 0 0 28px rgba(255, 138, 61, .42); }
+[data-theme="gta"] .endwall { background: repeating-linear-gradient(135deg, #ff4f98 0 6px, #ff9a3c 6px 10px); }
+[data-theme="gta"] .nav-ind { background: var(--gta-sunset); box-shadow: 0 0 10px rgba(255, 61, 139, .7); }
+[data-theme="gta"] a:hover { text-decoration-color: var(--gta-pink-hi); }
+
+/* the hat on three headings becomes a short neon tube under the heading's last word; it flickers on as the hat would drop */
+[data-theme="gta"] .hp-hat::before { left: -1.7em; bottom: -.21em; width: 1.55em; height: .07em; border-radius: .05em; transform: none; transform-origin: 0 50%;
+  background: #ffe4f0; filter: none; transition: none;
+  box-shadow: 0 0 .03em #fff, 0 0 .1em #ff4f98, 0 0 .26em #ff3d8b, 0 0 .55em rgba(255, 61, 139, .55); }
+[data-theme="gta"] .hp-hat:not(.on)::before { opacity: 0; transform: none; }
+[data-theme="gta"] .hp-hat.on::before { animation: gtaNeonOn 1s .85s both; }
+@keyframes gtaNeonOn { 0% { opacity: 0; } 8% { opacity: 1; } 13% { opacity: .15; } 22% { opacity: .9; } 27% { opacity: .3; } 40%, 100% { opacity: 1; } }
+
+/* =================================================================== controls written for a white page (as in Night) */
+[data-theme="gta"] .task, [data-theme="gta"] .limit, [data-theme="gta"] .fanbox, [data-theme="gta"] .archbox, [data-theme="gta"] .casebtn,
+[data-theme="gta"] .mini, [data-theme="gta"] .chartbox, [data-theme="gta"] .mode-card, [data-theme="gta"] .abstract { box-shadow: var(--card-glow); }
+[data-theme="gta"] .task:hover, [data-theme="gta"] .casebtn:hover { box-shadow: 0 0 0 1px rgba(255, 92, 158, .4), 0 0 30px rgba(255, 61, 139, .16), 0 22px 60px -28px rgba(0, 0, 0, .85); }
+[data-theme="gta"] .tile { box-shadow: 0 0 0 1px rgba(46, 230, 214, .1); }
+[data-theme="gta"] .header { color: var(--ink); }
+[data-theme="gta"] .header.scrolled { background: rgba(11, 19, 34, .82); border-bottom-color: rgba(255, 92, 158, .16); }
+[data-theme="gta"] .nav a.active, [data-theme="gta"] .nav a:hover { color: #fff; }
+[data-theme="gta"] .brand-mark circle { fill: var(--bg); stroke: var(--ink); } [data-theme="gta"] .brand-mark path { fill: var(--ink); }
+[data-theme="gta"] .rail .cam { background: var(--bg); border-color: var(--ink); }
+[data-theme="gta"] .btn.primary { background: var(--gta-sunset); border-color: transparent; color: #1a0610; }
+[data-theme="gta"] .btn.primary:hover { background: var(--gta-pink-hi); }
+[data-theme="gta"] .btn:hover { border-color: var(--gta-pink-hi); }
+[data-theme="gta"] .seg.dark button[aria-pressed="true"] { background: var(--gta-sunset); color: #1a0610; }
+[data-theme="gta"] .seg button[aria-pressed="true"] { background: var(--panel-2); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(255, 92, 158, .45), 0 0 14px -4px rgba(255, 61, 139, .5); }
+[data-theme="gta"] .key.on, [data-theme="gta"] kbd.on { color: var(--bg); }
+[data-theme="gta"] .lowdata input:checked { background: var(--gta-pink); }
+[data-theme="gta"] .lowdata input, [data-theme="gta"] .toggle input:not(:checked) { background: #2b3a57; }
+[data-theme="gta"] .tooltip { background: #f4f1ec; color: #0b1322; }
+/* white-on-ink buttons (their ink turns light here): sunset pills with dark text */
+[data-theme="gta"] :is(#method .mw-steps button[aria-pressed="true"], .fchip[aria-pressed="true"], #pg-next:not(:disabled), #v-play, .pad button:active, .pad button.on) { background: var(--gta-sunset); border-color: transparent; color: #1a0610; }
+[data-theme="gta"] .cards-hint .hplay { background: var(--gta-pink); color: #1a0610; }
+[data-theme="gta"] .num .bars .b:hover::after, [data-theme="gta"] .skip { background: #f4f1ec; color: #0b1322; }
+[data-theme="gta"] .info-pop { background: #131e34; box-shadow: 0 0 0 1px rgba(255, 92, 158, .3), 0 18px 40px rgba(0, 0, 0, .6); }
+[data-theme="gta"] .mnav ol { background: var(--surface); }
+[data-theme="gta"] .mnav[open] summary { background: var(--gta-pink); color: #1a0610; }
+[data-theme="gta"] .casebtn[aria-pressed="true"] { border-color: var(--gta-pink-hi); box-shadow: 0 0 0 1px var(--gta-pink-hi), 0 0 22px rgba(255, 61, 139, .3); }
+[data-theme="gta"] .chunks button.now { border-color: var(--wall); }
+[data-theme="gta"] .chip { background: rgba(255, 255, 255, .06); border-color: rgba(255, 255, 255, .12); color: var(--ink-2); }
+[data-theme="gta"] .chip.viol { color: #ff8f80; background: rgba(211, 58, 44, .18); border-color: rgba(211, 58, 44, .4); }
+[data-theme="gta"] .chip.back { color: #ffb45e; background: rgba(224, 138, 30, .16); border-color: rgba(224, 138, 30, .38); }
+[data-theme="gta"] .chip.ok { color: #63d69a; background: rgba(30, 158, 90, .18); border-color: rgba(30, 158, 90, .4); }
+[data-theme="gta"] .chip.slide { color: #7ce3ab; background: rgba(30, 158, 90, .26); border-color: rgba(30, 158, 90, .5); }
+[data-theme="gta"] .chip.early, [data-theme="gta"] .chip.idle { color: var(--ink-3); }
+[data-theme="gta"] .tile .chip { background: rgba(8, 12, 22, .84); }
+[data-theme="gta"] .legend i.gt { background: rgba(240, 244, 250, .35); }
+[data-theme="gta"] .maintable tr.ours td { background: rgba(30, 158, 90, .13); }
+[data-theme="gta"] .bib { background: rgba(19, 30, 52, .88); color: #e6ecf5; border-color: rgba(46, 230, 214, .2); box-shadow: inset 4px 0 0 var(--gta-pink), var(--card-glow); }
+[data-theme="gta"] .bib .copy { background: var(--panel-2); color: var(--ink); border-color: var(--line-2); }
+[data-theme="gta"] .view-tag, [data-theme="gta"] .pg-tag { color: #2a3140; background: rgba(250, 250, 252, .92); box-shadow: 0 0 0 1px rgba(20, 30, 50, .18); }
+[data-theme="gta"] #method img { filter: brightness(.95); border-radius: 12px; box-shadow: 0 0 0 1px rgba(255, 92, 158, .2), 0 20px 50px -24px rgba(0, 0, 0, .8); }
+/* charts and the fan: SVG with fixed colours for a white page */
+[data-theme="gta"] svg [fill="#111318"] { fill: var(--ink); }
+[data-theme="gta"] svg [stroke="#111318"] { stroke: var(--ink); }
+[data-theme="gta"] svg [stroke="#22262e"] { stroke: #d3dae6; }
+[data-theme="gta"] svg [fill="#22262e"] { fill: #d3dae6; }
+[data-theme="gta"] svg [stroke="#eef1f6"] { stroke: var(--line); }
+[data-theme="gta"] svg [fill="#f3f5f8"] { fill: var(--panel-2); }
+[data-theme="gta"] svg [fill="#f8f9fb"] { fill: rgba(150, 205, 255, .06); }
+[data-theme="gta"] svg [fill="#7c8394"] { fill: var(--ink-3); }
+[data-theme="gta"] svg [fill="#aab0bd"] { fill: var(--ink-4); }
+[data-theme="gta"] svg [stroke="#fff"] { stroke: var(--surface); }
+[data-theme="gta"] svg [fill="#fff"]:not(path) { fill: var(--surface); }
+/* the task panel (bench.css) */
+[data-theme="gta"] dialog.tpanel { --tp-lbg: rgba(150, 205, 255, .06); background: #111b30; color: var(--ink);
+  box-shadow: 0 0 0 1px rgba(255, 92, 158, .24), 0 0 60px -18px rgba(255, 61, 139, .3), 0 30px 80px rgba(0, 0, 0, .7); }
+[data-theme="gta"] dialog.tpanel::backdrop { background: rgba(4, 8, 16, .66); }
+[data-theme="gta"] .tp-head { background: rgba(17, 27, 48, .95); border-bottom-color: rgba(255, 92, 158, .18); }
+[data-theme="gta"] .tp-head h3 { text-shadow: 0 0 22px rgba(255, 61, 139, .2); }
+[data-theme="gta"] .tp-tabs { background: rgba(150, 205, 255, .07); }
+[data-theme="gta"] .tp-tabs button[aria-selected="true"] { background: var(--panel-2); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
+[data-theme="gta"] .tp-sec h4 .n { background: var(--wall); color: #241c00; }
+[data-theme="gta"] .tp-pic { border-color: var(--line); background: rgba(150, 205, 255, .05); }
+[data-theme="gta"] .tp-model { background: linear-gradient(180deg, #1c2b4a, #142038); color: #ffd0e4; box-shadow: inset 0 0 0 1px rgba(255, 92, 158, .32); }
+[data-theme="gta"] .tp-out { background: rgba(150, 205, 255, .04); }
+[data-theme="gta"] .tp-f { background: rgba(150, 205, 255, .06); }
+[data-theme="gta"] .tp-m.tp-label .tp-f { background: rgba(150, 205, 255, .07); }
+[data-theme="gta"] .tp-map, [data-theme="gta"] .tp-top { border-color: rgba(255, 92, 158, .2); }
+[data-theme="gta"] .tp-player .iconbtn { background: var(--wall); border-color: var(--wall); color: #241c00; }
+[data-theme="gta"] #bench .tasks .task:hover { border-color: rgba(255, 92, 158, .35); }
+[data-theme="gta"] #bench .task .tchip:hover, [data-theme="gta"] #bench .task .tchip:focus-visible { border-color: var(--gta-pink-hi); color: var(--ink); background: rgba(255, 61, 139, .1); }
+
+/* the header's three-way switch */
+[data-theme="gta"] .looksw { background: rgba(150, 205, 255, .1); }
+[data-theme="gta"] .looksw button { color: #b4c0d4; }
+[data-theme="gta"] .looksw button:hover:not([aria-checked="true"]) { color: #fff; }
+[data-theme="gta"] .looksw button[aria-checked="true"] { color: #1a0610; }
+[data-theme="gta"] .looksw-ind { background: var(--gta-sunset); box-shadow: 0 0 14px rgba(255, 61, 139, .5); }
+
+/* =================================================================== the hero: dusk, a sunset behind the comparison, palms */
+[data-theme="gta"] .hero { --panel: rgba(150, 205, 255, .09); }
+[data-theme="gta"] .hp-bg { -webkit-mask: none; mask: none;
+  background:
+    radial-gradient(48% 30% at 50% 66%, rgba(255, 176, 84, .55), rgba(255, 120, 70, .26) 45%, rgba(255, 90, 110, 0) 100%),
+    radial-gradient(80% 42% at 50% 70%, rgba(255, 70, 120, .34), rgba(255, 70, 120, 0) 72%),
+    linear-gradient(180deg, #0a1328 0%, #0e2142 24%, #15385a 38%, #3f5a66 47%, #c2794f 56%, #f08a45 64%, #ff6a55 72%, #f2507a 80%, #6a3350 89%, #1a2236 95%, var(--bg) 100%); }
+/* heat haze over the horizon: fine bands of light, held still (a moving masked layer cost every frame) */
+[data-theme="gta"] .hp-bg::before { display: block; inset: 52% -6% 14%; height: auto; opacity: .5;
+  background: repeating-linear-gradient(180deg, rgba(255, 226, 190, .12) 0 2px, rgba(255, 226, 190, 0) 2px 11px);
+  -webkit-mask: radial-gradient(60% 50% at 50% 50%, #000, transparent); mask: radial-gradient(60% 50% at 50% 50%, #000, transparent); }
+/* the palms: two silhouettes on each side of the comparison (the hero's two glows, re-dressed) */
+[data-theme="gta"] .hp-glow { display: none; top: auto; bottom: 5.5%; width: clamp(170px, 15vw, 290px); height: auto; aspect-ratio: 260 / 460; border-radius: 0;
+  background: url("../assets/gta/palms-silhouette.svg") 0 100% / contain no-repeat; transform-origin: 50% 100%; will-change: transform; animation: gtaSway 7.5s ease-in-out infinite alternate; }
+[data-theme="gta"] .hp-glow.l { left: max(-30px, calc(50% - 720px - 30px)); }
+[data-theme="gta"] .hp-glow.r { right: max(-30px, calc(50% - 720px - 30px)); scale: -1 1; animation-duration: 8.6s; animation-delay: -3s; }
+@keyframes gtaSway { 0% { rotate: -1.1deg; } 100% { rotate: 1.4deg; } }
+@media (min-width: 1100px) { [data-theme="gta"] .hp-glow { display: block; } }
+[data-theme="gta"] .hp-steam.is-hero, [data-theme="gta"] .hp-steam.is-stage { display: none; }
+[data-theme="gta"] .hp-paused .hp-glow { animation-play-state: paused; }
+/* the bar under the header stays opaque here: a backdrop blur re-renders on every scrolled frame */
+[data-theme="gta"] .header.scrolled { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(11, 19, 34, .95); }
+
+/* the title: white on the dusk with a hard pink shadow; "World Models" in the sunset */
+[data-theme="gta"] .hero .title .t1 { text-shadow: .03em .035em 0 rgba(255, 61, 139, .9), .06em .07em 0 rgba(10, 18, 34, .6); }
+[data-theme="gta"] .hero .title .t2, [data-theme="gta"] .hero .title .t2 .ch { color: transparent; -webkit-background-clip: text; background-clip: text;
+  background-image: linear-gradient(180deg, #ffe27a 8%, #ff9a3c 42%, #ff4f78 70%, #ff3d8b 100%); }
+[data-theme="gta"] .hero .title .t2:has(.ch) { background-image: none; }
+[data-theme="gta"] .hero .authors { color: #b9c5d8; }
+[data-theme="gta"] .hero .tagline .nope { background: linear-gradient(90deg, #ff3d8b, #ff8a3d) 0 86% / 100% 24% no-repeat; }
+[data-theme="gta"] .hero .btn { color: var(--ink); background: rgba(11, 19, 34, .55); }
+[data-theme="gta"] .hero .seg button[aria-pressed="true"] { background: #fbf5ef; color: #0b1322; box-shadow: 0 0 16px -2px rgba(255, 61, 139, .55); }
+[data-theme="gta"] .hero .stage { box-shadow: 0 0 0 1px rgba(255, 111, 171, .6), 0 0 0 6px rgba(255, 61, 139, .08), 0 30px 90px -20px rgba(0, 0, 0, .85), 0 0 140px -30px rgba(255, 120, 60, .55); }
+/* the frame lights up like a neon sign once the hero is in (after the intro, if one plays) */
+[data-theme="gta"].hero-go:not(.intro-gta) .hero .stage { animation: gtaStageOn 1.1s .5s both; }
+@keyframes gtaStageOn {
+  0%, 12%, 22% { box-shadow: 0 0 0 1px rgba(255, 111, 171, .15), 0 0 0 6px rgba(255, 61, 139, 0), 0 30px 90px -20px rgba(0, 0, 0, .85), 0 0 140px -30px rgba(255, 120, 60, .2); }
+  8%, 17%, 100% { box-shadow: 0 0 0 1px rgba(255, 111, 171, .6), 0 0 0 6px rgba(255, 61, 139, .08), 0 30px 90px -20px rgba(0, 0, 0, .85), 0 0 140px -30px rgba(255, 120, 60, .55); }
+  30% { box-shadow: 0 0 0 2px rgba(255, 150, 200, .95), 0 0 0 8px rgba(255, 61, 139, .22), 0 30px 90px -20px rgba(0, 0, 0, .85), 0 0 160px -24px rgba(255, 120, 60, .8); } }
+/* the wipe: a neon tube with a sunset knob */
+[data-theme="gta"] .hero .stage .handle::before { background: linear-gradient(180deg, #ffd6e8, #fff 50%, #ffd6e8);
+  box-shadow: 0 0 0 1px rgba(255, 61, 139, .55), 0 0 10px #ff3d8b, 0 0 26px rgba(255, 61, 139, .75), 0 0 60px rgba(255, 138, 61, .45); }
+[data-theme="gta"] .hero .stage .handle span { background: radial-gradient(120% 120% at 32% 26%, #ffe4ef, #ff5c9e 46%, #d81b65 100%); color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .4), 0 0 18px rgba(255, 61, 139, .6), inset 0 0 0 1px rgba(255, 255, 255, .4); }
+[data-theme="gta"] .hp-spark { background: #ffe4f0; box-shadow: 0 0 7px 2px rgba(255, 61, 139, .85); }
+
+/* =================================================================== the motel key tag (in the ticket's place) */
+.gta-keytag { display: none; }
+[data-theme="gta"] .hp-ticket { display: none; }
+[data-theme="gta"] .gta-keytag { --tw: clamp(270px, 25.5vw, 392px); display: block; position: relative; flex: none; width: var(--tw); aspect-ratio: 2.4 / 1; font-size: calc(var(--tw) / 26);
+  margin-right: clamp(0px, 2vw, 28px); }
+@media (min-width: 961px) and (max-width: 1180px) { [data-theme="gta"] .gta-keytag { --tw: clamp(240px, 24vw, 300px); margin-right: 0; } }
+@media (max-width: 960px) { [data-theme="gta"] .gta-keytag { order: -1; --tw: min(330px, 86vw); margin: 4px 0 6px; } }
+/* a low sun behind it, cut by the classic stripes */
+.kt-sun { position: absolute; left: 56%; top: 64%; width: 74%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); z-index: -1; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .8 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(circle at 50% 38%, #fff1c2 0%, #ffd27a 22%, #ff9a4a 52%, #ff5a6e 78%, #e8407a 100%);
+  box-shadow: 0 0 60px 10px rgba(255, 140, 80, .35); opacity: .95; }
+.kt-sun::after { content: none; }
+[data-theme="gta"] .gta-keytag::before { content: ""; position: absolute; left: 54%; top: 60%; width: 120%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); z-index: -2; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 150, 80, .42), rgba(255, 61, 139, .16) 55%, rgba(255, 61, 139, 0)); }
+@media (max-width: 960px) { .kt-sun { display: none; } [data-theme="gta"] .gta-keytag::before { width: 90%; opacity: .7; } }
+.kt-tilt { position: absolute; inset: 0; transform: rotate(-4deg); }
+.kt-swing::before { content: ""; position: absolute; left: 26%; right: 1%; top: 22%; bottom: -16%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .5), rgba(0, 0, 0, 0)); }   /* the tag's shadow */
+@media (max-width: 960px) { .kt-tilt { transform: rotate(-2deg); } }
+.kt-swing { position: absolute; inset: 0; transform-origin: 20% 46%; }
+.kt-art { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.kt-text { position: absolute; left: 37%; right: 12%; top: 14%; bottom: 14%; display: flex; align-items: center; justify-content: center; gap: .7em;
+  color: #f4fffd; text-shadow: 0 .06em 0 rgba(0, 40, 36, .55), 0 -.04em 0 rgba(255, 255, 255, .18); }
+.kt-room { font: 400 4.4em/.9 "Anton", "Archivo", sans-serif; letter-spacing: .01em; }
+.kt-name { font: 400 1.95em/1 "Anton", "Archivo", sans-serif; letter-spacing: .03em; }
+.kt-name span { display: block; }
+.kt-name span:last-child { color: #ffd6e8; }
+/* the NoPe stamp: a pink rubber stamp (also the intro's big one) */
+.gta-stamp { display: inline-grid; place-items: center; padding: .1em .34em .12em; border-radius: .16em; font: 400 1em/1 "Anton", "Archivo", sans-serif; letter-spacing: .02em; color: #fff; white-space: nowrap;
+  background: radial-gradient(130% 150% at 25% 15%, #ff7fb4 0%, #ff3d8b 45%, #d81b65 100%);
+  box-shadow: inset 0 0 0 .05em #fff, inset 0 0 0 .1em #ff3d8b, inset 0 0 0 .13em rgba(255, 255, 255, .9), 0 .06em 0 rgba(120, 0, 50, .55), 0 .1em .35em rgba(0, 0, 0, .45);
+  text-shadow: 0 .04em 0 rgba(120, 0, 50, .5); }
+.kt-stamp { position: absolute; right: -1%; bottom: -15%; font-size: 1.8em; transform: rotate(-10deg); pointer-events: none; }
+/* without the intro script (e.g. / in the GTA look) the tag drops onto its ring once the hero comes in; gta_intro.js
+   drives it itself on /?gta (html.gta-js) */
+[data-theme="gta"].hero-go:not(.gta-js) .kt-swing { animation: gtaKtDrop 1.25s .3s both; }
+@keyframes gtaKtDrop { 0% { translate: 0 -70%; rotate: -14deg; opacity: 0; } 30% { translate: 0 0; rotate: 7deg; opacity: 1; } 48% { rotate: -4.5deg; } 64% { rotate: 2.5deg; } 80% { rotate: -1deg; } 100% { translate: 0 0; rotate: 0deg; opacity: 1; } }
+
+/* =================================================================== palms in the page margins (beside 1180 px sections) */
+/* neon palms stand in the side margins of a few sections where the margin is free; they sway only while js/gta_intro.js
+   sees them on screen (html.gta-js + .gta-sway), and stand still elsewhere */
+[data-theme="gta"] :is(#knows, #method, #results, #cite) .head { position: relative; }
+[data-theme="gta"] :is(#knows, #results) .head::after, [data-theme="gta"] :is(#method, #cite) .head::after {
+  content: none; position: absolute; top: -10px; width: 112px; height: 258px; pointer-events: none; z-index: -1;
+  background: url("../assets/gta/palm-neon.svg") 50% 100% / contain no-repeat; transform-origin: 50% 100%; will-change: transform; animation: gtaSwayN 6.5s ease-in-out infinite alternate paused; opacity: .9; }
+[data-theme="gta"] :is(#knows, #results) .head::after { right: calc(100% + 34px); }
+[data-theme="gta"] :is(#method, #cite) .head::after { left: calc(100% + 34px); scale: -1 1; animation-duration: 7.4s; animation-delay: -2.5s; }
+@media (min-width: 1400px) { [data-theme="gta"] :is(#knows, #method, #results, #cite) .head::after { content: ""; } }
+[data-theme="gta"] .gta-sway .head::after { animation-play-state: running; }
+@keyframes gtaSwayN { 0% { rotate: -1.6deg; } 100% { rotate: 1.8deg; } }
+
+/* =================================================================== the GTA intro (js/gta_intro.js; once per tab session) */
+/* first paint: the page is covered until the intro's own overlay is built (html.gta-live); it gives up by itself */
+html.intro-gta body::before { content: ""; position: fixed; inset: 0; z-index: 199; pointer-events: none;
+  background: radial-gradient(90% 60% at 50% 100%, rgba(255, 110, 70, .45), rgba(255, 61, 139, .12) 55%, rgba(255, 61, 139, 0) 80%), #0b1322;
+  animation: gtaSafety .01s 4s forwards; }
+html.intro-gta.gta-live body::before { display: none; }
+@keyframes gtaSafety { to { visibility: hidden; opacity: 0; } }
+.gta-intro { position: fixed; inset: 0; z-index: 200; overflow: hidden; background: #0b1322; cursor: pointer; animation: gtaSafety .01s 6s forwards;
+  font-family: "Inter", system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+/* only transform, opacity and clip-path move; the tints are plain see-through colour (no blend modes, no filters) */
+.gi-cam { position: absolute; inset: 0; transform-origin: 0 0; overflow: hidden; background: #0b1322; will-change: transform, clip-path; }
+.gi-panel { position: absolute; inset: 0; overflow: hidden; will-change: clip-path; }
+.gi-panel img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; will-change: transform; }
+.gi-tint { position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 61, 139, .3) 0%, rgba(255, 120, 60, .16) 55%, rgba(40, 14, 50, .42) 100%); }
+/* the colour split at the stop: a cyan copy and a red copy of the frame, recombined with screen; nudged apart, they fringe */
+.gi-split { position: absolute; inset: 0; background: #000; opacity: 0; }
+.gs { position: absolute; inset: 0; isolation: isolate; }
+.gs i { position: absolute; inset: 0; mix-blend-mode: multiply; }
+.gs.gb i { background: #00ffff; } .gs.r i { background: #ff0000; }
+.gs.r { mix-blend-mode: screen; }
+/* the title card between the frames: a striped sun going down, a neon palm, the name in neon */
+.gi-title { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; overflow: hidden; will-change: transform;
+  background: linear-gradient(180deg, #0a1328 0%, #15385a 34%, #c2794f 54%, #ff6a55 66%, #f2507a 78%, #3a2240 100%); }
+.gi-sun { position: absolute; left: 50%; top: 60%; width: min(30vmin, 280px); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 50% 38%, #fff1c2 0%, #ffd27a 22%, #ff9a4a 52%, #ff5a6e 78%, #e8407a 100%); box-shadow: 0 0 50px 8px rgba(255, 140, 80, .35); }
+.gi-palm { position: absolute; bottom: -3%; left: calc(50% - min(19vmin, 170px)); width: min(15vmin, 130px); aspect-ratio: 130 / 300; background: url("../assets/gta/palm-neon.svg") 50% 100% / contain no-repeat; }
+.gi-title b { position: relative; font: 400 min(13vmin, 124px)/.92 "Anton", "Archivo", sans-serif; letter-spacing: .01em; color: #fff8fb;
+  text-shadow: 0 0 .04em #fff, 0 0 .14em #ff4f98, 0 0 .34em rgba(255, 61, 139, .75), .05em .06em 0 rgba(10, 18, 34, .55); }
+.gi-title span { position: relative; font: 400 min(6.4vmin, 58px)/1 "Anton", "Archivo", sans-serif; letter-spacing: .3em; margin-right: -.3em; color: #5ff0e2;
+  text-shadow: 0 0 .2em rgba(46, 230, 214, .8), .05em .06em 0 rgba(10, 18, 34, .5); }
+/* speed lines while the camera pushes, a shock ring at the stop (transform and opacity only) */
+.gi-speed { position: absolute; inset: -20%; z-index: 2; pointer-events: none; will-change: transform, opacity;
+  background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0) 0deg 3.6deg, rgba(255, 240, 248, .62) 3.9deg 4.5deg, rgba(255, 255, 255, 0) 4.8deg 7deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 40%, #000 78%); mask: radial-gradient(closest-side, transparent 40%, #000 78%); }   /* only while it shows (0.5 s) */
+.gi-wave { position: absolute; left: 50%; top: 50%; z-index: 4; width: 60vmin; height: 60vmin; border-radius: 50%; pointer-events: none; will-change: transform, opacity;
+  box-shadow: inset 0 0 0 .9vmin rgba(255, 92, 158, .85), 0 0 4vmin rgba(255, 61, 139, .6); }
+.gi-glow { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(10, 18, 34, .45), rgba(10, 18, 34, 0) 30%, rgba(10, 18, 34, 0) 70%, rgba(10, 18, 34, .55)); }
+.gi-bar { position: absolute; left: 0; right: 0; height: 11vh; background: #05080f; z-index: 3; transform: scaleY(0); will-change: transform; }
+.gi-bar.t { top: 0; transform-origin: 50% 0; } .gi-bar.b { bottom: 0; transform-origin: 50% 100%; }
+.gi-flash { position: absolute; inset: 0; z-index: 4; opacity: 0; pointer-events: none; background: radial-gradient(70% 60% at 50% 52%, rgba(255, 245, 250, .9), rgba(255, 120, 170, .3) 45%, rgba(255, 120, 170, 0) 75%); }
+/* one big plain label, top left: the original model's way, then NoPeWorld's in its place */
+.gi-label { position: absolute; left: max(16px, 3.2vw); top: max(14px, 3vh); z-index: 6; display: flex; align-items: center; gap: .45em; opacity: 0;
+  font: 400 clamp(24px, 3vw, 42px)/1 "Anton", "Archivo", sans-serif; letter-spacing: .025em; color: #fff; white-space: nowrap;
+  text-shadow: .045em .055em 0 rgba(5, 8, 15, .85); }
+.gi-label .dot { width: .42em; height: .42em; border-radius: 50%; flex: none; }
+.gi-label.raw .dot { background: #ff5a4a; box-shadow: 0 0 .3em #ff5a4a; }
+.gi-label.ours .dot { background: #2fd17d; box-shadow: 0 0 .3em #2fd17d; }
+.gi-label.ours b { color: #8ff0bf; }
+.gi-label b { font-weight: 400; }
+.gi-hud { position: absolute; left: max(16px, 3.2vw); bottom: max(16px, 4vh); z-index: 6; display: flex; align-items: flex-end; gap: 14px; opacity: 0; }
+.gi-map { width: clamp(88px, 11vmin, 132px); height: auto; aspect-ratio: 1; display: block; overflow: visible; border-radius: 50%; box-shadow: 0 8px 22px rgba(0, 0, 0, .5); }
+.gi-key { display: inline-grid; place-items: center; width: clamp(40px, 4.4vmin, 52px); height: clamp(40px, 4.4vmin, 52px); margin-bottom: 8px; border-radius: 10px;
+  font: 700 clamp(18px, 2vmin, 24px)/1 var(--mono, monospace); background: #fff; color: #0b1322; box-shadow: 0 4px 0 #9aa7bd, 0 0 0 2px #ff3d8b, 0 0 18px rgba(255, 61, 139, .65); }
+.gi-stamp { position: absolute; left: 74%; top: 26%; z-index: 7; font-size: clamp(56px, 8vw, 120px); opacity: 0; will-change: transform; pointer-events: none; }
+.gi-load { position: absolute; right: max(16px, 3vw); bottom: max(19px, calc(4vh + 3px)); z-index: 6; }
+.gi-load i { display: block; width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid rgba(255, 255, 255, .22); border-top-color: #ff5c9e; border-right-color: #ffa03a; animation: gtaSpin .8s linear infinite; }
+@keyframes gtaSpin { to { transform: rotate(360deg); } }
+.gi-skip { position: absolute; right: max(16px, 3vw); top: max(14px, 2.6vh); z-index: 8; border: 1px solid rgba(244, 246, 250, .4); background: rgba(8, 12, 22, .55); color: #f4f6fa;
+  border-radius: 999px; padding: 8px 16px; font: 600 13px "Inter", sans-serif; letter-spacing: .02em; cursor: pointer; }
+.gi-skip:hover { border-color: #ff6fab; }
+@media (max-width: 600px) { .gi-label { font-size: 19px; max-width: calc(100vw - 136px); white-space: normal; line-height: 1.05; } }
+@media (prefers-reduced-motion: reduce) { .gta-intro { display: none !important; } html.intro-gta body::before { display: none; } }
+@media print { .gta-intro, .kt-sun, .gta-radar { display: none !important; } }
+
+/* =================================================================== more of the look: a radar, a phone menu, tape and neon */
+/* the radar (js/gta_intro.js, /?gta only): bottom-left, only where the corner is free of content */
+.gta-radar { display: none; position: fixed; left: 22px; bottom: 22px; z-index: 40; width: 112px; pointer-events: none; opacity: 0; transform: translateY(10px) scale(.96);
+  transition: opacity .35s, transform .35s cubic-bezier(.2, .8, .2, 1); }
+@media (min-width: 1200px) { [data-theme="gta"] .gta-radar { display: block; } }
+[data-theme="gta"] .gta-radar.on { opacity: 1; transform: none; }
+.gr-disc { display: block; width: 112px; height: 112px; border-radius: 50%; box-shadow: 0 8px 20px rgba(0, 0, 0, .5), 0 0 16px rgba(46, 230, 214, .16); }
+.gta-radar svg { display: block; width: 112px; height: 112px; overflow: visible; }
+.gr-stop { fill: #46628f; stroke: #0b1322; stroke-width: 1.2; }
+.gr-stop.now { fill: #ff3d8b; stroke: #ffd6e8; }
+
+/* the section menu on phones and tablets opens as a phone: a notch, sections as app icons */
+[data-theme="gta"] .mnav ol { min-width: 212px; padding: 36px 10px 14px; border-radius: 28px; border: 2px solid #34466b; background: linear-gradient(180deg, #172744, #0c1426 70%);
+  box-shadow: inset 0 0 0 3px #0b1220, 0 22px 54px rgba(0, 0, 0, .6), 0 0 34px rgba(255, 61, 139, .22); }
+[data-theme="gta"] .mnav ol::after { content: ""; position: absolute; left: 50%; top: 10px; width: 58px; height: 15px; margin-left: -29px; border-radius: 99px; background: #05080f; }
+[data-theme="gta"] .mnav a { display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 7px 10px; }
+[data-theme="gta"] .mnav a i { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: 0; border-radius: 9px; font: 700 11px/1 var(--mono); font-style: normal; color: #1a0610;
+  background: var(--gta-sunset); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+[data-theme="gta"] .mnav li:nth-child(3n + 2) a i { background: linear-gradient(135deg, #5ff0e2, #12a99c); color: #04211e; }
+[data-theme="gta"] .mnav li:nth-child(3n) a i { background: linear-gradient(135deg, #ffd36b, #ff8a3d); color: #2a1200; }
+[data-theme="gta"] .mnav a:hover, [data-theme="gta"] .mnav a.active { background: rgba(255, 255, 255, .07); }
+
+/* chapter labels end in a run of diagonal stripes */
+[data-theme="gta"] .head .eyebrow::after { content: ""; flex: none; width: 2.8em; height: .6em; opacity: .9;
+  background: repeating-linear-gradient(115deg, #ff3d8b 0 .13em, rgba(255, 61, 139, 0) .13em .32em); }
+/* the title splits its colours under the pointer; buttons glow */
+[data-theme="gta"] .hero .title .t1 { transition: text-shadow .25s; }
+@media (hover: hover) { [data-theme="gta"] .hero .title:hover .t1 { text-shadow: -.03em 0 rgba(46, 230, 214, .85), .03em .035em 0 rgba(255, 61, 139, .9), .06em .07em 0 rgba(10, 18, 34, .6); } }
+[data-theme="gta"] .btn:hover { box-shadow: 0 0 0 1px var(--gta-pink-hi), 0 0 20px rgba(255, 61, 139, .35); }
+/* the key tag swings on its ring when the pointer touches it */
+.kt-tilt { transform-origin: 20% 46%; }
+@media (hover: hover) { [data-theme="gta"] .gta-keytag:hover .kt-tilt { animation: gtaJiggle 1s ease-out; } }
+@keyframes gtaJiggle { 0% { rotate: 0deg; } 18% { rotate: 6deg; } 42% { rotate: -4deg; } 66% { rotate: 2deg; } 84% { rotate: -.8deg; } 100% { rotate: 0deg; } }
+
+/* scroll-driven: the sun goes down behind the key tag, the hero's palms rise, the neon palms float past (browsers
+   without scroll timelines keep them still) */
+@supports (animation-timeline: scroll()) {
+  [data-theme="gta"] .kt-sun { animation: gtaSunset linear both; animation-timeline: scroll(root); animation-range: 0 85vh; }
+  [data-theme="gta"] .hp-glow { animation: gtaSway 7.5s ease-in-out infinite alternate, gtaRise linear both; animation-timeline: auto, scroll(root); animation-range: normal, 0 110vh; }
+  [data-theme="gta"] .hp-glow.r { animation-duration: 8.6s, auto; animation-delay: -3s, 0s; }
+  [data-theme="gta"] .hp-paused .hp-glow { animation-play-state: paused, running; }
+  [data-theme="gta"] :is(#knows, #results) .head::after, [data-theme="gta"] :is(#method, #cite) .head::after {
+    animation: gtaSwayN 6.5s ease-in-out infinite alternate, gtaFloat linear both; animation-timeline: auto, view(); animation-play-state: paused, running; }
+  [data-theme="gta"] :is(#method, #cite) .head::after { animation-duration: 7.4s, auto; animation-delay: -2.5s, 0s; }
+  [data-theme="gta"] .gta-sway .head::after { animation-play-state: running, running; }
+}
+@keyframes gtaSunset { to { translate: 0 28%; opacity: .4; } }
+@keyframes gtaRise { to { translate: 0 -14%; } }
+@keyframes gtaFloat { from { translate: 0 60px; } to { translate: 0 -60px; } }
+
+/* =================================================================== second pass (design review, 11-23 night): less synthwave,
+   more glossy GTA; big type; the hero video higher on phones */
+/* the header: opaque navy in every state, so section text never shows through it */
+[data-theme="gta"] .header, [data-theme="gta"] .header.scrolled, [data-theme="gta"] .header.on-dark { background: #0b1322; -webkit-backdrop-filter: none; backdrop-filter: none;
+  border-bottom: 1px solid rgba(255, 92, 158, .16); color: var(--ink); }
+/* the hero's comparison tags: big type straight on the video, no pill; the small W key hidden in this look */
+[data-theme="gta"] .hero .stage .tag { top: 20px; padding: 0; gap: .32em; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 0;
+  font: 400 clamp(20px, 2.4vw, 34px)/1 "Anton", "Archivo", sans-serif; letter-spacing: .025em; color: #fff;
+  text-shadow: .05em .06em 0 rgba(5, 8, 15, .9), 0 0 .35em rgba(5, 8, 15, .55); }
+[data-theme="gta"] .hero .stage .tag.l { left: 22px; } [data-theme="gta"] .hero .stage .tag.r { right: 22px; }
+[data-theme="gta"] .hero .stage .tag .dot { width: .36em; height: .36em; box-shadow: 0 0 0 .06em rgba(5, 8, 15, .7); }
+[data-theme="gta"] .hero .stage .hud { display: none; }
+/* glossy glass controls (no blur: a light top edge and a sheen) */
+[data-theme="gta"] :is(.btn, .seg, .iconbtn, .looksw, .mnav summary) { background-image: linear-gradient(180deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .03) 55%, rgba(255, 255, 255, 0));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .06), 0 6px 18px -8px rgba(0, 0, 0, .6); }
+[data-theme="gta"] .hero .btn { background-color: rgba(11, 19, 34, .62); border-color: rgba(255, 255, 255, .16); }
+[data-theme="gta"] .seg button[aria-pressed="true"], [data-theme="gta"] .hero .seg button[aria-pressed="true"] {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 60%); }
+/* section heads: a bigger chapter label, a slanted number chip, a slanted band of sunset behind the head */
+[data-theme="gta"] .head { position: relative; isolation: isolate; }
+[data-theme="gta"] .head::before { content: ""; position: absolute; z-index: -1; left: -6%; right: 18%; top: -6px; height: calc(100% + 12px); pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 61, 139, .12), rgba(255, 138, 61, .1) 45%, rgba(255, 138, 61, 0) 85%); transform: skewX(-14deg); transform-origin: 0 100%;
+  border-left: 3px solid rgba(255, 92, 158, .35); }
+[data-theme="gta"] .head .eyebrow, [data-theme="gta"] .pg-side .eyebrow { font-size: clamp(22px, 2vw, 26px); letter-spacing: .1em; }
+[data-theme="gta"] .head .eyebrow .chap, [data-theme="gta"] .pg-side .eyebrow .chap { display: inline-block; transform: skewX(-12deg); border-radius: 4px; padding: 4px 12px; font-size: clamp(15px, 1.3vw, 18px); }
+/* headings: a hard pink shadow instead of a glow; no bar on the left; the last word underlined in neon */
+[data-theme="gta"] .head h2 { padding-left: 0; text-shadow: .03em .035em 0 #ff3d8b; }
+[data-theme="gta"] .head h2::before { display: none; }
+[data-theme="gta"] .hp-hat::before { display: none !important; }
+[data-theme="gta"] .head h2 .w:last-of-type { padding-bottom: .1em;
+  background: linear-gradient(90deg, #ffe4f0, #ffe4f0) 0 100% / 100% .055em no-repeat,
+    linear-gradient(180deg, rgba(255, 61, 139, 0), rgba(255, 61, 139, .55) 50%, rgba(255, 61, 139, 0)) 0 calc(100% + .07em) / 100% .2em no-repeat; }
+/* Method: the white paper figure sits in a dark bezel; steps readable, the pressed one dark on sunset */
+[data-theme="gta"] #method .mfig-a { background: #0f1a2e; padding: 14px; border-radius: 18px; border-color: rgba(255, 92, 158, .2); }
+[data-theme="gta"] #method img { filter: brightness(.88); box-shadow: none; border-radius: 8px; }
+[data-theme="gta"] #method .mw-steps button { color: var(--ink-2); background: rgba(255, 255, 255, .05); border-color: rgba(255, 255, 255, .16); opacity: 1; transition: none; }
+[data-theme="gta"] #method .mw-steps button[aria-pressed="true"] { color: #1a0610; opacity: 1; transition: none; }
+[data-theme="gta"] #method .mw-steps button[aria-pressed="true"] i { background: #1a0610; color: #fff; }
+/* Problem: the world models' names on the tiles in Anton */
+@media (min-width: 961px) { [data-theme="gta"] #problem .tile .lbl { font: 400 16px/1 "Anton", "Archivo", sans-serif; letter-spacing: .03em; padding: 5px 9px 4px; } }
+@media (max-width: 600px) { [data-theme="gta"] #problem .tile .lbl { font: 400 15px/1 "Anton", "Archivo", sans-serif; letter-spacing: .03em; padding: 5px 9px 4px; } }   /* three tiles a row in between: too narrow for two big labels */
+/* the hero's palms stand higher, so their crowns show beside the comparison */
+[data-theme="gta"] .hp-glow { bottom: 24%; }
+/* phones: the comparison comes up higher; the tag hides, the links ride in one row that scrolls */
+@media (max-width: 600px) {
+  [data-theme="gta"] .gta-keytag { display: none; }
+  [data-theme="gta"] .hero .links { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; gap: 8px;
+    margin-inline: calc(-1 * var(--gutter)); padding: 2px var(--gutter) 6px; -webkit-mask: none; }
+  [data-theme="gta"] .hero .links::-webkit-scrollbar { display: none; }
+  [data-theme="gta"] .hero .links .btn { flex: none; height: 38px; padding: 0 14px; font-size: 14px; }
+  [data-theme="gta"] .hero .authors { font-size: 13px; }
+}
+/* tablets: the tag beside the title */
+@media (min-width: 601px) and (max-width: 960px) {
+  [data-theme="gta"] .hp-titlerow { flex-direction: row; flex-wrap: nowrap; align-items: center; }
+  [data-theme="gta"] .hp-titlerow .title { flex: none; font-size: 7.4vw; }   /* a little smaller, so the tag fits beside it */
+  [data-theme="gta"] .gta-keytag { order: 0; --tw: clamp(150px, 22vw, 230px); margin: 0; }
+}
+/* the intro on a portrait screen: the focus frame whole, not blown up */
+.gta-intro.is-port .gi-panel.is-focus img { object-fit: contain; }
+.gi-panel.is-focus { background: #05080f; }
+
+/* =================================================================== reduced motion: no palms, no haze, the tag at rest */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="gta"] .hp-glow { display: none !important; }
+  [data-theme="gta"] :is(#knows, #method, #results, #cite) .head::after { content: none !important; }
+  [data-theme="gta"] .kt-swing, [data-theme="gta"] .kt-tilt, [data-theme="gta"] .kt-sun { animation: none !important; }
+  .gta-radar { display: none !important; }
+  [data-theme="gta"] .hp-hat.on::before { animation: none; opacity: 1; }
+  [data-theme="gta"] .hero .stage { animation: none !important; }
+}
+
+/* the 3D wall viewer: the same navy as its WebGL paper (map3d.js), so there is no white flash before the first frame */
+[data-theme="gta"] .map3d { background: #101a2c; }

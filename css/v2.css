@@ -452,3 +452,6 @@ html { overflow-x: hidden; overflow-x: clip; }
 /* user 11-22: the authors sit right under the title (before the tagline) */
 .hero-top > .authors { margin: calc(-1 * clamp(4px, 1vw, 14px)) 0 0; font-size: clamp(15px, 1.15vw, 17px); }
 .hero-top > .authors [data-cfg=authors] { font-size: clamp(16px, 1.3vw, 19px); }
+
+/* the hero controls hide what a scene has no use for (the obstacle toggle without a track, the caption line where there is none) */
+.stage-controls [hidden] { display: none !important; }

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 460" width="260" height="460">
+  <!-- NoPeWorld GTA look: two palms against the sunset, as silhouettes (original drawing). The pair stands on the left;
+       css/gta.css mirrors it for the right. -->
+  <g fill="#060a14">
+    <!-- the tall palm, leaning right -->
+    <path d="M40 460 C44 380 58 290 92 214 C98 202 104 190 110 178 L118 182 C112 194 106 206 101 218 C70 292 58 382 56 460Z"/>
+    <g transform="translate(114 178)">
+      <path d="M0 0 C-30 -20 -70 -14 -104 18 C-74 4 -44 2 -12 10Z"/>
+      <path d="M0 0 C-22 -36 -58 -54 -96 -50 C-62 -36 -34 -22 -8 4Z"/>
+      <path d="M0 0 C-4 -40 -24 -70 -52 -86 C-34 -60 -18 -34 -4 2Z"/>
+      <path d="M0 0 C20 -34 52 -56 92 -58 C60 -42 30 -24 6 4Z"/>
+      <path d="M0 0 C34 -12 76 -4 112 26 C78 12 42 6 8 8Z"/>
+      <path d="M0 0 C30 6 60 30 78 66 C54 38 28 20 4 8Z"/>
+      <path d="M0 0 C-14 12 -26 38 -30 70 C-20 42 -10 22 2 8Z"/>
+      <path d="M0 0 C-28 2 -60 22 -80 56 C-54 32 -30 18 -4 10Z"/>
+      <circle cx="-4" cy="8" r="5"/><circle cx="6" cy="10" r="5"/><circle cx="1" cy="16" r="4.6"/>
+    </g>
+    <!-- the short palm, leaning left -->
+    <path d="M168 460 C166 404 160 350 146 306 L154 302 C170 348 178 402 182 460Z"/>
+    <g transform="translate(150 302) scale(.78)">
+      <path d="M0 0 C-30 -20 -70 -14 -104 18 C-74 4 -44 2 -12 10Z"/>
+      <path d="M0 0 C-22 -36 -58 -54 -96 -50 C-62 -36 -34 -22 -8 4Z"/>
+      <path d="M0 0 C-4 -40 -24 -70 -52 -86 C-34 -60 -18 -34 -4 2Z"/>
+      <path d="M0 0 C20 -34 52 -56 92 -58 C60 -42 30 -24 6 4Z"/>
+      <path d="M0 0 C34 -12 76 -4 112 26 C78 12 42 6 8 8Z"/>
+      <path d="M0 0 C30 6 60 30 78 66 C54 38 28 20 4 8Z"/>
+      <path d="M0 0 C-28 2 -60 22 -80 56 C-54 32 -30 18 -4 10Z"/>
+      <circle cx="-3" cy="8" r="5"/><circle cx="6" cy="9" r="5"/>
+    </g>
+  </g>
+</svg>

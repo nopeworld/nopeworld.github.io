@@ -244,7 +244,10 @@ export function initMotion(lenis) {
   const plugins = [window.ScrollTrigger, window.SplitText, window.Flip, window.DrawSVGPlugin, window.ScrambleTextPlugin].filter(Boolean);
   gsap.registerPlugin(...plugins);
   if (reduceMotion) { d.classList.remove('intro-on'); d.classList.add('hero-go'); $('#title')?.classList.add('go'); return; }
-  opening(heroIn);                        // the Platform 9¾ intro (opening.js); without it, heroIn alone
+  // the look's intro: Platform 9¾ in Day and Night (opening.js), the GTA one in the GTA look (gta_intro.js, fetched only then);
+  // without one, heroIn alone
+  if (document.documentElement.dataset.theme === 'gta') import('./gta_intro.js').then(m => m.gtaIntro(heroIn)).catch(() => { document.documentElement.classList.remove('intro-gta'); heroIn(); });
+  else opening(heroIn);
   const mm = gsap.matchMedia();
   mm.add({ wide: '(min-width: 961px)', narrow: '(max-width: 960px)' }, (ctx) => {
     const { wide } = ctx.conditions;

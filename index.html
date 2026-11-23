@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="css/method.css">
 <link rel="stylesheet" href="css/bench.css">
 <link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/gta.css">
 <!-- every module the page boots with, fetched in parallel (otherwise each import waits for the one before it) -->
 <link rel="modulepreload" href="js/main.js">
 <link rel="modulepreload" href="js/theme.js">
@@ -35,6 +36,7 @@
 <link rel="modulepreload" href="js/mapdraw.js">
 <link rel="modulepreload" href="js/topview.js">
 <link rel="modulepreload" href="js/hero.js">
+<link rel="modulepreload" href="js/hero_scenes.js">
 <link rel="modulepreload" href="js/problem.js">
 <link rel="modulepreload" href="js/playground.js">
 <link rel="modulepreload" href="js/knows.js">
@@ -48,11 +50,17 @@
 <link rel="modulepreload" href="js/open.js">
 <link rel="stylesheet" href="vendor/katex.min.css" media="print" onload="this.media='all'">
 <script>
-  // the intro plays once per tab session, only at the top of the page, never with reduced motion
-  (function () { try { var d = document.documentElement, r = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!r && !location.hash && !sessionStorage.getItem('nope-intro')) d.classList.add('intro-on'); d.classList.add('js'); } catch (e) { /* storage blocked */ } })();
-  // Day by default; Night View only when the reader chose it (js/theme.js)
-  (function () { var t = null; try { t = localStorage.getItem('nope-theme'); } catch (e) {} if (t !== 'night' && t !== 'day') t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'night' : 'day'; document.documentElement.dataset.theme = t; })();
+  // the entry (/ or /?gta, where the /gta/ stub lands) and the look (js/theme.js): on / the reader's pick (localStorage), else
+  // Night if the system is dark, else Day; on /?gta the GTA look unless the reader picked another in this tab.
+  // The intro follows the look: Platform 9 3/4 for Day and Night, the GTA one for GTA; each plays once per tab session, only
+  // at the top of the page, never with reduced motion.
+  (function () { var d = document.documentElement, gta = /(^\?|&)gta(=|&|$)/.test(location.search), ok = { day: 1, night: 1, gta: 1 }, t = null;
+    d.dataset.entry = gta ? 'gta' : 'hp'; d.classList.add('js');
+    try { t = gta ? sessionStorage.getItem('nope-theme-gta') : localStorage.getItem('nope-theme'); } catch (e) {}
+    if (!ok[t]) t = gta ? 'gta' : ((window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'night' : 'day');
+    d.dataset.theme = t;
+    try { var r = matchMedia('(prefers-reduced-motion: reduce)').matches, k = t === 'gta' ? 'nope-intro-gta' : 'nope-intro';
+      if (!r && !location.hash && !sessionStorage.getItem(k)) d.classList.add(t === 'gta' ? 'intro-gta' : 'intro-on'); } catch (e) { /* storage blocked */ } })();
 </script>
 <script src="config.js"></script>
 </head>
@@ -118,10 +126,12 @@
         <ol><li><a href="#problem"><i>01</i>Problem</a></li><li><a href="#knows"><i>02</i>Insight</a></li><li><a href="#method"><i>03</i>Method</a></li><li><a href="#bench"><i>04</i>NoPeBench</a></li>
         <li><a href="#results"><i>05</i>Results</a></li><li><a href="#compare"><i>06</i>Compare</a></li><li><a href="#open"><i>07</i>Open domain</a></li><li><a href="#cite"><i>08</i>BibTeX</a></li></ol>
       </details>
-      <label class="lowdata themesw" title="Night View: the page in dark tones with gold light">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 12.6A6.5 6.5 0 0 1 7.4 4.5a6.5 6.5 0 1 0 8.1 8.1z"/></svg>
-        <input type="checkbox" id="night" aria-label="Night View"> <span>Night</span>
-      </label>
+      <div class="looksw" role="radiogroup" aria-label="Look" id="looksw">
+        <button type="button" role="radio" aria-checked="true" data-look="day" title="Day: the paper's page"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2.1M10 16.1v2.1M1.8 10h2.1M16.1 10h2.1M4.2 4.2l1.5 1.5M14.3 14.3l1.5 1.5M4.2 15.8l1.5-1.5M14.3 5.7l1.5-1.5"/></svg><span>Day</span></button>
+        <button type="button" role="radio" aria-checked="false" data-look="night" title="Night: dark tones with gold light"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 12.6A6.5 6.5 0 0 1 7.4 4.5a6.5 6.5 0 1 0 8.1 8.1z"/></svg><span>Night</span></button>
+        <button type="button" role="radio" aria-checked="false" data-look="gta" title="GTA: sunset streets"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.6 18.2c.2-4.4-.3-8-1.6-10.6"/><path d="M9 7.6C7.6 5.6 5 5 2.6 6.2M9 7.6c.4-2.5 2.4-4.2 5-4.1M9 7.6c2.1-.9 4.9-.3 6.6 1.7M9 7.6c-2.2-.2-4.4 1.2-5.2 3.6"/></svg><span>GTA</span></button>
+        <i class="looksw-ind" aria-hidden="true"></i>
+      </div>
     </div>
   </div>
   <div class="rail" aria-hidden="true"><div class="track"></div><div class="wallseg"></div><div class="cam"></div></div>
@@ -149,6 +159,36 @@
           </div>
           <span class="tk-stamp" aria-hidden="true"><span class="nope-stamp">NoPe</span></span>
         </div>
+        <!-- the GTA look: the motel key tag in the ticket's place (css/gta.css) -->
+        <div class="gta-keytag" hidden role="img" aria-label="A motel key tag: NoPe Motel, room 934, stamped NoPe">
+          <span class="kt-sun" aria-hidden="true"></span>
+          <div class="kt-tilt" aria-hidden="true"><div class="kt-swing">
+            <svg class="kt-art" viewBox="0 0 260 108" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="ktBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1bbcad"/><stop offset=".48" stop-color="#0c8379"/><stop offset="1" stop-color="#05514a"/></linearGradient>
+                <linearGradient id="ktBrass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff3c2"/><stop offset=".45" stop-color="#e0ad3a"/><stop offset="1" stop-color="#8a6110"/></linearGradient>
+                <mask id="ktHole"><rect width="260" height="108" fill="white"/><circle cx="84" cy="54" r="6.4" fill="#000"/></mask>
+              </defs>
+              <circle cx="54" cy="45" r="31.3" fill="none" stroke="url(#ktBrass)" stroke-width="3.6"/>
+              <g transform="translate(35 80) rotate(135)" fill="url(#ktBrass)" stroke="#6b4a0c" stroke-width=".8">
+                <path d="M0 -7.6a7.6 7.6 0 1 0 .01 0zM0 -3.2a3.2 3.2 0 1 1 -.01 0z" fill-rule="evenodd"/>
+                <path d="M7 -2.3H34V2.3H31.5V6.6H28.5V2.3H26.5V5.4H23.5V2.3H7Z"/>
+              </g>
+              <g mask="url(#ktHole)">
+                <path d="M66 54 L90 12 H228 L252 54 L228 96 H90 Z" fill="url(#ktBody)" stroke="url(#ktBody)" stroke-width="12" stroke-linejoin="round"/>
+                <path d="M77 54 L96 20 H222 L241 54 L222 88 H96 Z" fill="none" stroke="#e6fffb" stroke-opacity=".5" stroke-width="1.3" stroke-linejoin="round"/>
+                <path d="M74 36 L88 10 H230 L242 32 C196 39 120 41 74 36Z" fill="white" opacity=".15"/>
+              </g>
+              <circle cx="84" cy="54" r="6.4" fill="none" stroke="#032e2a" stroke-width="1.6"/>
+              <path d="M84 54A31.3 31.3 0 0 1 74.1 69" fill="none" stroke="url(#ktBrass)" stroke-width="3.6" stroke-linecap="round"/>
+            </svg>
+            <div class="kt-text">
+              <span class="kt-room">934</span>
+              <span class="kt-name"><span>NoPe</span><span>Motel</span></span>
+            </div>
+            <span class="kt-stamp"><span class="gta-stamp">NoPe</span></span>
+          </div></div>
+        </div>
       </div>
       <p class="authors"><span data-cfg="authors"><span class="nm">Yuhang Dai</span>, <span class="nm">Yinwei Wu</span>, <span class="nm">Ziyue Lin</span>, <span class="nm">Han Ji</span>, <span class="nm">Xingyi Yang<a class="corr" href="mailto:xingyi.yang@polyu.edu.hk" title="Corresponding author" aria-label="Corresponding author: e-mail"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="4.5" width="15" height="11" rx="1.5"/><path d="M3 5.5l7 5.5 7-5.5"/></svg></a></span></span><span class="affil" data-cfg="affil">Learning &amp; Generation Lab, The Hong Kong Polytechnic University</span></p>
       <div class="hero-side">
@@ -172,6 +212,7 @@
       </div>
       <figcaption class="controls stage-controls">
         <button class="iconbtn" id="hero-play" aria-label="Pause"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg></button>
+        <div class="seg" role="group" aria-label="Scene" id="hero-scene"></div>
         <div class="seg" role="group" aria-label="Seed" id="hero-seeds">
           <button aria-pressed="true" data-seed="1">Seed 1</button><button aria-pressed="false" data-seed="2">Seed 2</button><button aria-pressed="false" data-seed="3">Seed 3</button>
         </div>
