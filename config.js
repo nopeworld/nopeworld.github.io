@@ -3,8 +3,8 @@
    The hero's author line is also written in index.html, so the page reads the same without JavaScript; keep both in step. */
 window.NOPE_CONFIG = {
   links: {
-    arxiv: "",      // the arXiv ID is not assigned yet (submission 8403577); then "https://arxiv.org/abs/XXXX.XXXXX"
-    pdf: "",        // e.g. "https://arxiv.org/pdf/XXXX.XXXXX"
+    arxiv: "https://arxiv.org/abs/2611.27963",   // user 11-23 (submitted 20 Nov 2026)
+    pdf: "https://arxiv.org/pdf/2611.27963",
     code: "https://github.com/yuhangdai427/NoPeWorld",
     weights: "https://huggingface.co/PeterDAI/NoPeWorld",
     bench: "https://huggingface.co/datasets/PeterDAI/NoPeBench"
@@ -32,6 +32,6 @@ window.NOPE_CONFIG = {
     title: "Non-penetrating World Models",
     author: "Dai, Yuhang and Wu, Yinwei and Lin, Ziyue and Ji, Han and Yang, Xingyi",
     year: "2026",
-    note: "arXiv preprint" // add the ID once assigned, e.g. "arXiv preprint arXiv:XXXX.XXXXX"
+    note: "arXiv preprint arXiv:2611.27963"
   }
 };
