@@ -135,6 +135,9 @@
 [data-theme="gta"] .looksw button:hover:not([aria-checked="true"]) { color: #fff; }
 [data-theme="gta"] .looksw button[aria-checked="true"] { color: #1a0610; }
 [data-theme="gta"] .looksw-ind { background: var(--gta-sunset); box-shadow: 0 0 14px rgba(255, 61, 139, .5); }
+[data-theme="gta"] .soundsw { background: rgba(150, 205, 255, .1); color: #b4c0d4; }
+[data-theme="gta"] .soundsw:hover { color: #fff; }
+[data-theme="gta"] .soundsw[aria-pressed="true"] { background: var(--gta-sunset); color: #1a0610; box-shadow: 0 0 14px rgba(255, 61, 139, .5); }
 
 /* =================================================================== the hero: dusk, a sunset behind the comparison, palms */
 [data-theme="gta"] .hero { --panel: rgba(150, 205, 255, .09); }
@@ -295,6 +298,23 @@ html.intro-gta.gta-live body::before { display: none; }
 .gi-skip { position: absolute; right: max(16px, 3vw); top: max(14px, 2.6vh); z-index: 8; border: 1px solid rgba(244, 246, 250, .4); background: rgba(8, 12, 22, .55); color: #f4f6fa;
   border-radius: 999px; padding: 8px 16px; font: 600 13px "Inter", sans-serif; letter-spacing: .02em; cursor: pointer; }
 .gi-skip:hover { border-color: #ff6fab; }
+/* the gate (js/sound.js): "press start" on the loading screen's first frame, a smaller muted start under it */
+.nope-gate.is-gta { position: absolute; left: 50%; top: 74%; z-index: 9; display: flex; flex-direction: column; align-items: center; gap: clamp(14px, 2.2vh, 20px);
+  transform: translate(-50%, -50%); width: max-content; max-width: calc(100vw - 32px); cursor: default; animation: ngIn .4s ease-out both; }
+.is-gta .ng-go { display: inline-flex; align-items: center; gap: .32em; padding: .26em .82em .22em .7em; border: 0; border-radius: 999px;
+  font: 400 clamp(38px, 4.8vw, 68px)/1 "Anton", "Archivo", sans-serif; letter-spacing: .05em; text-transform: uppercase; color: #fff;
+  background: linear-gradient(90deg, #ff3d8b 0%, #ff6a4a 52%, #ffa03a 100%); text-shadow: .035em .045em 0 rgba(90, 10, 40, .55);
+  box-shadow: 0 0 0 .055em #fff8fb, 0 0 0 .11em #0b1322, 0 0 .7em rgba(255, 61, 139, .8), 0 .25em .6em rgba(0, 0, 0, .5);
+  animation: ngPulse 1.1s ease-in-out infinite alternate; transition: transform .15s; }
+.is-gta .ng-go svg { width: .78em; height: .78em; filter: drop-shadow(.035em .045em 0 rgba(90, 10, 40, .55)); }
+.is-gta .ng-go:hover { transform: scale(1.04); }
+.is-gta .ng-mute { min-height: 44px; padding: .5em 1.2em .44em; border: 2px solid rgba(255, 255, 255, .8); border-radius: 999px; background: rgba(8, 12, 22, .66);
+  font: 400 clamp(19px, 1.8vw, 25px)/1 "Anton", "Archivo", sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #fff; transition: border-color .2s, color .2s; }
+.is-gta .ng-mute:hover { border-color: #5ff0e2; color: #5ff0e2; }
+.is-gta button:focus-visible { outline: 3px solid #5ff0e2; outline-offset: 5px; }
+@keyframes ngPulse { to { box-shadow: 0 0 0 .055em #fff8fb, 0 0 0 .11em #0b1322, 0 0 1.4em rgba(255, 61, 139, 1), 0 .25em .6em rgba(0, 0, 0, .5); } }
+.gta-intro.is-gated { cursor: default; }
+.gta-intro.is-gated :is(.gi-skip, .gi-load) { opacity: 0; pointer-events: none; }
 @media (max-width: 600px) { .gi-label { font-size: 19px; max-width: calc(100vw - 136px); white-space: normal; line-height: 1.05; } }
 @media (prefers-reduced-motion: reduce) { .gta-intro { display: none !important; } html.intro-gta body::before { display: none; } }
 @media print { .gta-intro, .kt-sun, .gta-radar { display: none !important; } }

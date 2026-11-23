@@ -57,6 +57,24 @@ svg [fill="#f8f9fb"] { fill: #f6f0e5; } svg [fill="#f3f5f8"] { fill: #f1eadf; } 
 @media (max-width: 560px) { .looksw button { padding: 0 8px; } .looksw button span { display: none; } }
 @media (max-width: 360px) { .looksw { padding: 2px; gap: 0; } .looksw button { padding: 0 6px; } .looksw-ind { top: 2px; bottom: 2px; } }
 @media (prefers-reduced-motion: reduce) { .looksw-ind { transition: none; } }
+/* the sound button beside the switch (js/sound.js; Night and GTA only): a speaker, waves when on, a cross when off */
+.soundsw { display: inline-grid; place-items: center; flex: none; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: rgba(17, 19, 24, .06); color: var(--ink-3); transition: background-color .25s, color .25s, box-shadow .25s; }
+.soundsw[hidden] { display: none; }
+.soundsw svg { width: 18px; height: 18px; }
+.soundsw .sw-w { opacity: 0; } .soundsw[aria-pressed="true"] .sw-w { opacity: 1; } .soundsw[aria-pressed="true"] .sw-x { opacity: 0; }
+.soundsw:focus-visible { outline: 2px solid var(--gold, #c99628); outline-offset: 1px; }
+[data-theme="night"] .soundsw { background: rgba(255, 236, 200, .08); color: #b9a988; }
+[data-theme="night"] .soundsw:hover { color: #f2e6cc; }
+[data-theme="night"] .soundsw[aria-pressed="true"] { background: var(--gold); color: #241a10; box-shadow: 0 0 14px rgba(240, 192, 58, .35); }
+/* the smallest phones: the header makes room for the button (only while it shows; Day is as before) */
+@media (max-width: 360px) {
+  .soundsw { width: 28px; height: 28px; }
+  .header .bar:has(#soundsw:not([hidden])) { gap: 10px; }
+  .header .bar:has(#soundsw:not([hidden])) .tools { gap: 5px; }
+  .header .bar:has(#soundsw:not([hidden])) .mnav summary { padding-inline: 9px; }
+  .header .bar:has(#soundsw:not([hidden])) .looksw button { padding: 0 4px; }
+}
 
 /* =================================================================== NIGHT VIEW */
 [data-theme="night"] {
@@ -217,6 +235,25 @@ html.theme-vt::view-transition-new(root) { z-index: 2; }
 .hp-skip { position: absolute; right: max(16px, 3vw); bottom: max(16px, 4vh); z-index: 5; border: 1px solid rgba(244, 234, 216, .3); background: rgba(12, 9, 7, .45); color: #f4ead8; border-radius: 999px;
   padding: 7px 14px; font: 500 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
 .hp-skip:hover { border-color: #f4ead8; }
+/* the gate (js/sound.js): the first frame waits for one click, with sound or muted; big plain words only */
+.nope-gate.is-hp { position: absolute; left: 50%; top: 53%; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: clamp(14px, 2.2vh, 22px);
+  transform: translate(-50%, -50%); width: max-content; max-width: calc(100vw - 32px); cursor: default; animation: ngIn .5s ease-out both; }
+.nope-gate button { cursor: pointer; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+.nope-gate svg { width: 1.1em; height: 1.1em; flex: none; }
+.is-hp .ng-go { display: inline-flex; align-items: center; gap: .5em; padding: .6em 1.3em .64em 1.1em; border: 0; border-radius: 999px;
+  font: 700 clamp(23px, 2.6vw, 36px)/1 "Cinzel", "Times New Roman", serif; letter-spacing: .03em; color: #2a1a04;
+  background: radial-gradient(120% 160% at 28% 18%, #fff2bd 0%, #f2c94e 34%, #d9a326 62%, #a8770e 100%);
+  box-shadow: inset 0 0 0 .07em #2a1a04, inset 0 0 0 .13em #f7da86, inset 0 0 0 .17em #2a1a04, 0 .35em 1.2em rgba(0, 0, 0, .55), 0 0 1.6em rgba(255, 196, 90, .4);
+  animation: ngGlow 2.6s ease-in-out infinite; transition: transform .2s; }
+.is-hp .ng-go:hover { transform: scale(1.04); }
+.is-hp .ng-mute { min-height: 44px; padding: .58em 1.3em; border: 1.5px solid rgba(244, 234, 216, .5); border-radius: 999px; background: rgba(12, 9, 7, .6);
+  font: 600 clamp(17px, 1.5vw, 21px)/1 "Inter", system-ui, sans-serif; color: #f4ead8; transition: border-color .2s, background-color .2s; }
+.is-hp .ng-mute:hover { border-color: #f4ead8; background: rgba(12, 9, 7, .8); }
+.is-hp button:focus-visible { outline: 3px solid #f7da86; outline-offset: 4px; }
+@keyframes ngGlow { 50% { box-shadow: inset 0 0 0 .07em #2a1a04, inset 0 0 0 .13em #f7da86, inset 0 0 0 .17em #2a1a04, 0 .35em 1.2em rgba(0, 0, 0, .55), 0 0 2.6em rgba(255, 196, 90, .75); } }
+@keyframes ngIn { from { opacity: 0; } }
+.hp-intro.is-gated { cursor: default; }
+.hp-intro.is-gated .hp-skip { opacity: 0; pointer-events: none; }
 @media (max-width: 600px) { .hp-chip em { display: none; } .hp-trolley { width: 150vw; } }
 
 /* ---------- steam (intro, hero, over the video) ---------- */

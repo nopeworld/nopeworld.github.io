@@ -14,7 +14,8 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const osDark = matchMedia('(prefers-color-scheme: dark)');
 const store = () => { try { return entry === 'gta' ? sessionStorage : localStorage; } catch (e) { return null; } };
 const KEY = entry === 'gta' ? 'nope-theme-gta' : 'nope-theme';
-const stored = () => { try { const v = store()?.getItem(KEY); return LOOKS.includes(v) ? v : null; } catch (e) { return null; } };
+// on / only Day or Night is remembered: a GTA pick there lasts for that visit (user 11-23: / always opens on Platform 9 3/4)
+const stored = () => { try { const v = store()?.getItem(KEY); return (entry === 'gta' ? LOOKS : ['day', 'night']).includes(v) ? v : null; } catch (e) { return null; } };
 const saved = () => stored() || (entry === 'gta' ? 'gta' : (osDark.matches ? 'night' : 'day'));
 // the system changes its setting (e.g. at sunset): on / follow it, unless the reader has picked a look
 osDark.addEventListener?.('change', () => { if (entry === 'hp' && !stored()) setTheme(saved(), false); });
@@ -95,7 +96,8 @@ function hats() {
 }
 
 function init() {
-  setTheme(saved(), false);
+  // the <head> script has already chosen the look (and the intro) from the entry: start from it, do not re-read storage
+  setTheme(LOOKS.includes(d.dataset.theme) ? d.dataset.theme : saved(), false);
   const sw = document.getElementById('looksw');
   if (sw) {
     const btns = [...sw.querySelectorAll('button[data-look]')];

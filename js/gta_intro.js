@@ -15,7 +15,8 @@
 //       2.45 s the view shrinks into the hero's comparison in 0.45 s (opening.js's landing math; on phones it stays) and a
 //              diagonal wipe hands over to the stage; then the key tag drops onto its ring and the title glides in. The
 //              comparison's clock is never touched
-//     A click, a key, the wheel or a touch move skips it. Only big, plain words; no small print. Only the world models'
+//     It waits on its first frame for the sound gate (js/sound.js: "Press start" drives the timeline from the score's
+//     clock). A click, a key, the wheel or a touch move skips it. Only big, plain words; no small print. Only the world models'
 //     own frames (stills from the encoded clips; the input screenshot never appears); no second copy of a clip competes
 //     with the comparison. The colour split is two tinted copies blended with mix-blend-mode (no SVG filter, so it also
 //     works in Safari).
@@ -287,8 +288,10 @@ async function intro() {
     dispatchEvent(new Event('scroll'));                              // the radar looks again
   };
   const tl = gsap.timeline({ paused: true, onComplete: done, onUpdate: draw });
-  const skipIt = () => { if (!ended) { tl.progress(1); done(); } };
+  // a held key repeats: only a new press skips. sound.js fades the score on 'nope:intro-skip'
+  const skipIt = (e) => { if (e && e.repeat) return; if (!ended) { dispatchEvent(new Event('nope:intro-skip')); tl.progress(1); done(); } };
   const T = { open: .55, push: .95, through: 1.35, split: 1.78, hit: 1.9, stamp: 2.2, land: 2.45 };
+  window.gtaIntroT = T;                     // the score's cues (media/audio/cues.json marks) are these times
 
   // 1. the loading screen: the panels slide open on their diagonals, drifting; the title card's neon flickers on
   pans.forEach((p, i) => {
@@ -311,6 +314,7 @@ async function intro() {
     .fromTo(hud, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .3, ease: 'power2.out' }, T.open + .1)
     .to(me, { y: -40, duration: T.hit - T.open - .1, ease: 'power1.in' }, T.open + .1)
   // 3. the raw model's own next frame: a fast diagonal cut to it going through, its label; a red ghost on the map
+    .add('through', T.through)
     .to(cut, { t: 1, duration: .16, ease: 'power3.out' }, T.through)
     .fromTo(flash, { opacity: .45 }, { opacity: 0, duration: .3, ease: 'power2.out', immediateRender: false }, T.through)
     .set(fimgs, { scale: 1 }, T.through)
@@ -350,16 +354,21 @@ async function intro() {
   keyDrop(tl, after);
   openWipe(tl, after);
 
-  ov.addEventListener('click', skipIt);
-  ['keydown', 'wheel', 'touchmove'].forEach(t => addEventListener(t, skipIt, { passive: true }));
+  // the skip listeners: at once without the gate, after the gate's click or key with it (that press must not skip)
+  const arm = () => { if (ended) return; ov.addEventListener('click', skipIt); ['keydown', 'wheel', 'touchmove'].forEach(t => addEventListener(t, skipIt, { passive: true })); };
   window.gtaIntroDraw = draw;               // a seek with suppressed events skips onUpdate: scripts/shoot_gta.py draws itself
   // the loading screen holds until the fonts are in (SplitText measures the title's letters; at most 1.2 s), then it plays
-  ready(pans.map(p => $('img', p)).filter(Boolean)).then(() => {
-    if (ended) return;
+  const go = ready(pans.map(p => $('img', p)).filter(Boolean)).then(() => {
+    if (ended) return false;
     titleIn(tl, after + .05);
     window.gtaIntroTl = tl; window.gtaHero = heroApi;          // for scripts/shoot_gta.py (steps it frame by frame)
-    if (!window.gtaHold) tl.play();
+    return true;
   });
+  const auto = () => { arm(); go.then((ok) => { if (ok && !window.gtaHold) tl.play(); }); };
+  // the gate (js/sound.js): the first frame waits for "Press start" or "Start muted"; no gate for test scripts
+  // (window.nopeNoGate) and frame-by-frame recorders (gtaHold), or if sound.js fails: then it starts by itself, silent
+  if (window.nopeNoGate || window.gtaHold) auto();
+  else import('./sound.js').then((m) => { if (!m.gateIntro({ kind: 'gta', ov, tl, ready: go, arm, skip: skipIt, ended: () => ended })) auto(); }).catch(auto);
 }
 
 // the look's own motion (palms, radar), once; theme.js calls it when a reader picks the GTA look on /

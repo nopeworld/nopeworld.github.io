@@ -181,21 +181,30 @@ function buildRest(now) {
     for (const [sel, fn] of order) {
       if (!$(sel)) continue;
       await idle();
+      // never while an intro plays (its frames and its music's clock); waiting at the sound gate is idle time
+      while (!hurry && introPlaying()) await new Promise(r => setTimeout(r, 200));
       await fn().catch(err => console.error(sel, err));
     }
     restDone = true; restOk();
   })();
   return restP;
 }
-const introRunning = () => { const c = document.documentElement.classList; return c.contains('intro-on') || c.contains('intro-gta'); };
+const cls = () => document.documentElement.classList;
+const introRunning = () => cls().contains('intro-on') || cls().contains('intro-gta');
+const gated = () => cls().contains('nope-gated');               // js/sound.js: the intro waits for "with sound" or "muted"
+const introPlaying = () => introRunning() && !gated();
 function startRest() {
-  const hurryUp = () => buildRest(true);
-  ['wheel', 'touchmove', 'keydown'].forEach(t => addEventListener(t, hurryUp, { once: true, passive: true }));
+  // the reader scrolls, presses a key or touches: everything at once; not the key or touch that starts or skips the intro
+  const kinds = ['wheel', 'touchmove', 'keydown'];
+  const hurryUp = () => { if (introRunning()) return; kinds.forEach(t => removeEventListener(t, hurryUp)); buildRest(true); };
+  kinds.forEach(t => addEventListener(t, hurryUp, { passive: true }));
   if (location.hash.length > 1) { buildRest(true); return; }
   const go = (ms) => setTimeout(() => buildRest(false), ms);
   if (!introRunning()) { go(1000); return; }
-  const mo = new MutationObserver(() => { if (!introRunning()) { mo.disconnect(); go(250); } });
+  // an intro at its sound gate leaves the page idle: build then (the loop pauses while the intro itself plays)
+  const mo = new MutationObserver(() => { if (gated()) go(250); if (!introRunning()) { mo.disconnect(); go(250); } });
   mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  if (gated()) go(250);
   go(12000);                                    // an intro that never ends must not leave the page unbuilt
 }
 
@@ -206,8 +215,14 @@ function boot() {
   const hero = SECTIONS[0][1]().catch(err => console.error('#top', err));
   startRest();
   const built = Promise.all([hero, restReady]);
+  // while an intro is up (its gate or the intro itself), keys must not scroll the page under it: a held Space started the
+  // intro and its repeats then scrolled the page 2000 px down, so the intro landed far below the hero (check_sound, 11-23)
+  const SCROLL_KEYS = new Set([' ', 'Spacebar', 'PageDown', 'PageUp', 'ArrowDown', 'ArrowUp', 'Home', 'End']);
+  addEventListener('keydown', (e) => { if (introRunning() && SCROLL_KEYS.has(e.key)) e.preventDefault(); }, { capture: true });
+  // never measure the page while an intro plays (a ScrollTrigger refresh is the heaviest single task here)
+  const afterIntro = () => new Promise(r => { const f = () => (introPlaying() ? setTimeout(f, 200) : r()); f(); });
   // the pinned method animation measures the page: once, when every section has its final height (and the fonts are in)
-  Promise.allSettled([built, document.fonts ? document.fonts.ready : null]).then(() => requestAnimationFrame(() => {
+  Promise.allSettled([built, document.fonts ? document.fonts.ready : null]).then(afterIntro).then(() => requestAnimationFrame(() => {
     refreshAll(); magnetic(); tilt();
     // headlines without a one-word last line, once the fonts and every section are in, and again after a resize
     if (noOrphans()) dispatchEvent(new Event('nope:layout'));

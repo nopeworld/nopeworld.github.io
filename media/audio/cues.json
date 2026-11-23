@@ -1,0 +1,118 @@
+{
+ "version": 1,
+ "intro_hp": {
+  "file": "intro_hp.m4a",
+  "gain": 1.0,
+  "marks": {
+   "hit": 1.4,
+   "morph": 2.3,
+   "title": 2.5,
+   "wipe": 3.3
+  },
+  "bedAt": 7.3,
+  "length": 11.6
+ },
+ "bed_night": {
+  "file": "bed_night.m4a",
+  "gain": 0.4,
+  "loopStart": 0.5,
+  "loopEnd": 19.7,
+  "length": 20.7
+ },
+ "intro_gta": {
+  "file": "intro_gta.m4a",
+  "gain": 1.0,
+  "marks": {
+   "through": 1.35,
+   "hit": 1.9,
+   "land": 2.45
+  },
+  "bedAt": 9.05,
+  "length": 12.6
+ },
+ "bed_gta": {
+  "file": "bed_gta.m4a",
+  "gain": 0.4,
+  "loopStart": 0.5,
+  "loopEnd": 18.1,
+  "length": 19.1
+ },
+ "sfx_night": {
+  "file": "sfx_night.m4a",
+  "gain": 1.0,
+  "sprites": {
+   "look": [
+    0.03,
+    1.7
+   ],
+   "tap": [
+    1.98,
+    0.6
+   ],
+   "switch": [
+    2.83,
+    0.8
+   ],
+   "slide": [
+    3.88,
+    0.6
+   ],
+   "open": [
+    4.73,
+    1.0
+   ],
+   "close": [
+    5.98,
+    0.8
+   ],
+   "nav": [
+    7.03,
+    0.8
+   ],
+   "on": [
+    8.08,
+    1.3
+   ]
+  },
+  "length": 9.63
+ },
+ "sfx_gta": {
+  "file": "sfx_gta.m4a",
+  "gain": 1.0,
+  "sprites": {
+   "look": [
+    0.03,
+    1.6
+   ],
+   "tap": [
+    1.88,
+    0.3494
+   ],
+   "switch": [
+    2.4794,
+    0.6999
+   ],
+   "slide": [
+    3.4293,
+    0.4
+   ],
+   "open": [
+    4.0793,
+    0.9
+   ],
+   "close": [
+    5.2293,
+    0.6931
+   ],
+   "nav": [
+    6.1724,
+    0.6
+   ],
+   "on": [
+    7.0224,
+    1.2
+   ]
+  },
+  "length": 8.4724
+ }
+}

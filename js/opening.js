@@ -6,6 +6,7 @@
 //   2.3 s  the view shrinks into the comparison (the clip at 5 s: NoPeWorld at the bricks, the raw model going through),
 //          the stamp flies onto the ticket, the title glides to its gold wall, the wipe opens to the middle
 // Where the stage is not wholly on screen (phones) the view dissolves instead. A click, a key or a scroll skips it.
+// It waits on its first frame for the sound gate (js/sound.js: "Enter with sound" drives the timeline from the score's clock).
 // Without the intro the page's own entrance runs (motion.js heroIn) and the ticket slides in.
 import { $, el, onVisible } from './util.js';
 import { heroApi } from './hero.js';
@@ -95,7 +96,8 @@ function intro() {
     d.classList.remove('intro-on'); ov.remove();
   };
   const tl = gsap.timeline({ paused: true, onComplete: done });
-  const skipIt = () => { if (!ended) { tl.progress(1); done(); } };
+  // a held key repeats: only a new press skips. sound.js fades the score on 'nope:intro-skip'
+  const skipIt = (e) => { if (e && e.repeat) return; if (!ended) { dispatchEvent(new Event('nope:intro-skip')); tl.progress(1); done(); } };
 
   // 1. the run at the wall, accelerating; the trolley bobs with the stride
   tl.to(wall, { scale: S, duration: 1.4, ease: 'power2.in' }, 0)
@@ -132,14 +134,20 @@ function intro() {
     .set(stamp, { opacity: 0 }, 'morph+=.85')
     .to(cam, { opacity: 0, duration: .4, ease: 'power1.inOut' }, 'morph+=.8')
     .set(ov, { display: 'none' }, 'morph+=1.25');
+  tl.add('title', 2.5).add('wipe', 'morph+=1.0');                  // the score's cues (media/audio/cues.json marks)
   titleIn(tl, 2.5);
   openWipe(tl, 'morph+=1.0');
 
-  ov.addEventListener('click', skipIt);
-  ['keydown', 'wheel', 'touchmove'].forEach(t => addEventListener(t, skipIt, { passive: true }));
+  // the skip listeners: at once without the gate, after the gate's click or key with it (that press must not skip)
+  const arm = () => { if (ended) return; ov.addEventListener('click', skipIt); ['keydown', 'wheel', 'touchmove'].forEach(t => addEventListener(t, skipIt, { passive: true })); };
   window.hpIntro = tl; window.hpHero = heroApi;                    // for scripts/shoot_intro.py (steps it frame by frame)
   window.hpClipAt = (t) => (t < 2.3 ? CLIP0 : (CLIP0 + t - 2.3) % ((heroApi.group && heroApi.group.duration) || 8.06));
-  ready().then(() => { if (!window.hpHold) tl.play(); });
+  const go = ready();
+  const auto = () => { arm(); go.then(() => { if (!window.hpHold) tl.play(); }); };
+  // the gate (js/sound.js): the first frame waits for "with sound" or "muted"; no gate for test scripts (window.nopeNoGate)
+  // and frame-by-frame recorders (hpHold), or if sound.js fails: then it starts by itself, silent, as before
+  if (window.nopeNoGate || window.hpHold) auto();
+  else import('./sound.js').then((m) => { if (!m.gateIntro({ kind: 'hp', ov, tl, ready: go, arm, skip: skipIt, ended: () => ended })) auto(); }).catch(auto);
 }
 
 export function opening(heroIn) {
