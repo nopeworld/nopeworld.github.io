@@ -5,13 +5,19 @@ import { json } from './util.js';
 export async function loadTrack(id) { try { return await json(`data/tracks/${id}.json`); } catch (e) { return null; } }
 
 export class Overlay {
-  constructor(canvas, video) { this.c = canvas; this.v = video; this.track = null; this.on = true; this.ctx = canvas.getContext('2d'); this.last = -1; }
+  constructor(canvas, video) {
+    this.c = canvas; this.v = video; this.track = null; this.on = true; this.ctx = canvas.getContext('2d'); this.last = -1;
+    // the canvas's layout size, kept by a ResizeObserver: reading offsetWidth on every drawn frame forced a layout per frame
+    this.box = null;
+    if (window.ResizeObserver) new ResizeObserver((es) => { const r = es[es.length - 1].contentRect; this.box = [r.width, r.height]; this.last = -1; }).observe(canvas);
+  }
   set(track) { this.track = track; this.last = -1; this.clear(); }
   setOn(on) { this.on = on; this.last = -1; if (!on) this.clear(); }
   clear() { const { c } = this; this.fit(); this.ctx.clearRect(0, 0, c.width, c.height); }
   fit() {
     const dpr = Math.min(2, window.devicePixelRatio || 1);   // layout size: a scaled ancestor must not resize the canvas
-    const w = Math.max(1, Math.round(this.c.offsetWidth * dpr)), h = Math.max(1, Math.round(this.c.offsetHeight * dpr));
+    const [cw, ch] = this.box || [this.c.offsetWidth, this.c.offsetHeight];
+    const w = Math.max(1, Math.round(cw * dpr)), h = Math.max(1, Math.round(ch * dpr));
     if (this.c.width !== w || this.c.height !== h) { this.c.width = w; this.c.height = h; this.last = -1; }
     return [w, h, dpr];
   }

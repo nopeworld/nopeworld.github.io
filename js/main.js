@@ -126,7 +126,10 @@ function smooth() {
   if (window.ScrollTrigger) lenis.on('scroll', window.ScrollTrigger.update);
   $$('a[href^="#"]').forEach(a => a.addEventListener('click', (e) => {
     const id = a.getAttribute('href'); if (id.length < 2) return; const t = $(id); if (!t) return;
-    e.preventDefault(); lenis.scrollTo(t, { offset: -70 }); history.replaceState(null, '', id);
+    e.preventDefault(); history.replaceState(null, '', id);
+    // the sections below the hero may not be built yet: build them now, measure once, then go
+    if (restDone) lenis.scrollTo(t, { offset: -70 });
+    else buildRest(true).then(() => { refreshAll(); lenis.scrollTo(t, { offset: -70 }); });
   }));
   // dialogs and inputs must not fight the smooth scroll
   $$('dialog').forEach(d => { d.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true }); d.setAttribute('data-lenis-prevent', ''); });
@@ -155,23 +158,60 @@ const SECTIONS = [
   ['#num-headline', () => import('./results.js').then(m => m.initHeadline())],
 ];
 
+// pins are created out of page order (sections load asynchronously): sort them by position before every refresh
+const refreshAll = () => { if (window.ScrollTrigger) { window.ScrollTrigger.sort(); window.ScrollTrigger.refresh(); } };
+
+// The sections below the hero (11-23, the user: entering stutters). Building all of them at boot took the intro's frames:
+// NoPeBench's table and dot plot, the Task 3 strip, overlays, and every ScrollTrigger measuring the page, seconds of
+// main-thread work while the intro ran. Now the hero is built at boot; the rest once the intro has finished (about 1 s
+// after load on a page without one), one section per idle slot, and all at once the moment the reader scrolls, presses a
+// key, follows a link or arrives on one. Media stay lazy as before: a clip is fetched only when its group comes on screen.
+let restP = null, restDone = false, hurry = false, wake = null, restOk = null;
+const restReady = new Promise(r => { restOk = r; });       // settles when every section is built; starts nothing
+const idle = () => new Promise(r => {
+  if (hurry) return r();
+  wake = r;
+  if (window.requestIdleCallback) requestIdleCallback(() => r(), { timeout: 400 }); else setTimeout(r, 50);
+});
+function buildRest(now) {
+  if (now && !hurry) { hurry = true; if (wake) wake(); }
+  if (!restP) restP = (async () => {
+    // the headline number sits right under the hero: first
+    const order = [SECTIONS[SECTIONS.length - 1], ...SECTIONS.slice(1, -1)];
+    for (const [sel, fn] of order) {
+      if (!$(sel)) continue;
+      await idle();
+      await fn().catch(err => console.error(sel, err));
+    }
+    restDone = true; restOk();
+  })();
+  return restP;
+}
+const introRunning = () => { const c = document.documentElement.classList; return c.contains('intro-on') || c.contains('intro-gta'); };
+function startRest() {
+  const hurryUp = () => buildRest(true);
+  ['wheel', 'touchmove', 'keydown'].forEach(t => addEventListener(t, hurryUp, { once: true, passive: true }));
+  if (location.hash.length > 1) { buildRest(true); return; }
+  const go = (ms) => setTimeout(() => buildRest(false), ms);
+  if (!introRunning()) { go(1000); return; }
+  const mo = new MutationObserver(() => { if (!introRunning()) { mo.disconnect(); go(250); } });
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  go(12000);                                    // an intro that never ends must not leave the page unbuilt
+}
+
 function boot() {
   links(); promo(); bibtex(); header(); reveals(); lowDataSwitch(); equations(); infoPopovers(); cursorTag();
   // deferred classic scripts (GSAP, Lenis) have run before this module: smooth scroll and the choreography start now
   smooth(); initMotion(lenis);
-  // every section builds its DOM at boot (so the page height is final and anchors land on their headings); media stay lazy:
-  // a clip is fetched only when its group comes on screen (SyncGroup.setVisible) or the reader presses play
-  const built = SECTIONS.filter(([sel]) => $(sel)).map(([sel, fn]) => fn().catch(err => console.error(sel, err)));
-  // the pinned method animation measures the page: measure again once every section has its final height
-  // pins are created out of page order (sections load asynchronously): sort them by position before every refresh
-  const refresh = () => { if (window.ScrollTrigger) { window.ScrollTrigger.sort(); window.ScrollTrigger.refresh(); } };
-  Promise.allSettled(built).then(() => requestAnimationFrame(refresh));
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
-  addEventListener('load', refresh);
-  Promise.allSettled(built).then(() => { magnetic(); tilt(); });
-  // headlines without a one-word last line, once the fonts and every section are in, and again after a resize
-  const orphans = () => { if (noOrphans()) dispatchEvent(new Event('nope:layout')); };
-  Promise.allSettled([...built, document.fonts ? document.fonts.ready : null]).then(() => requestAnimationFrame(orphans));
-  let rz = 0; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(orphans, 250); });
+  const hero = SECTIONS[0][1]().catch(err => console.error('#top', err));
+  startRest();
+  const built = Promise.all([hero, restReady]);
+  // the pinned method animation measures the page: once, when every section has its final height (and the fonts are in)
+  Promise.allSettled([built, document.fonts ? document.fonts.ready : null]).then(() => requestAnimationFrame(() => {
+    refreshAll(); magnetic(); tilt();
+    // headlines without a one-word last line, once the fonts and every section are in, and again after a resize
+    if (noOrphans()) dispatchEvent(new Event('nope:layout'));
+  }));
+  let rz = 0; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (noOrphans()) dispatchEvent(new Event('nope:layout')); }, 250); });
 }
 boot();
