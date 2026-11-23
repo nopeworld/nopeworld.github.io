@@ -22,7 +22,6 @@ function ready(sel, root = document) {
 function intro(done) {
   const gsap = G(), d = document.documentElement;
   if (!d.classList.contains('intro-on')) { done(); return; }
-  try { sessionStorage.setItem('nope-intro', '1'); } catch (e) { /* storage blocked */ }
   const ov = $('#intro'), mark = $('.intro-mark', ov), wall = $('.iw', mark), cam = $('.ic', mark), word = $('.intro-word', ov), brand = $('.brand-mark');
   ov.style.animation = 'none';   // the CSS safety timeout is for a page whose scripts failed
   gsap.set(wall, { scaleY: 0, transformOrigin: '50% 100%' });

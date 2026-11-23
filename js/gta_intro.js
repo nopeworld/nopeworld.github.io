@@ -24,7 +24,7 @@
 //     screen.
 //  3. a radar in the bottom-left corner: the reader as a dot driving up a street past one stop per section, the obstacle
 //     at the end (it stops there). Only where the corner is free of content.
-// Contract with motion.js: gtaIntro(heroIn) sets sessionStorage 'nope-intro-gta' and ends with html.intro-gta removed.
+// Contract with motion.js: gtaIntro(heroIn) ends with html.intro-gta removed (it plays on every load of /gta since 11-23).
 import { heroApi } from './hero.js';
 import { SCENES, gtaMedia } from './hero_scenes.js';
 import { noOrphans } from './ui.js';
@@ -198,7 +198,7 @@ function stageItem() {
 async function intro() {
   const gsap = window.gsap;
   if (!ITEMS.length) throw new Error('no GTA items');
-  try { sessionStorage.setItem('nope-intro-gta', '1'); } catch (e) { /* storage blocked */ }
+  /* the page no longer records a seen intro (user 11-23: a reload must bring the sound gate back); test scripts still pre-set the key to skip it */
   scrollTo(0, 0);
   // the stage's own clip decides which panel opens (hero.js sets it as it starts)
   await Promise.race([heroApi.ready, sleep(700)]);
@@ -382,12 +382,10 @@ export function gtaIntro(heroIn) {
     intro().catch((e) => {                  // never leave the page covered
       console.error('gta intro', e);
       $('#gta-intro')?.remove(); d.classList.remove('intro-gta', 'gta-live');
-      try { sessionStorage.setItem('nope-intro-gta', '1'); } catch (er) { /* storage blocked */ }
       heroIn();
     });
     return;
   }
-  try { sessionStorage.setItem('nope-intro-gta', '1'); } catch (e) { /* storage blocked */ }
   d.classList.remove('intro-gta');
   // the entrance splits the title into letters: once the fonts are in (at most 1.2 s; the hero waits hidden till then)
   fontsIn(1200).then(() => {

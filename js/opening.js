@@ -53,7 +53,7 @@ function titleIn(tl, at) {
 
 function intro() {
   const gsap = window.gsap;
-  try { sessionStorage.setItem('nope-intro', '1'); } catch (e) { /* storage blocked */ }
+  /* the page no longer records a seen intro (user 11-23: a reload must bring the sound gate back); test scripts still pre-set the key to skip it */
   const ov = $('#hp-intro'), cam = $('.hp-cam', ov), wall = $('.hp-wall', ov), arch = $('.hp-arch', ov), burst = $('.hp-burst', ov), flash = $('.hp-flash', ov);
   const trolley = $('.hp-trolley', ov), raw = $('.hp-chip.raw', ov), ours = $('.hp-chip.ours', ov), hud = $('.hp-hud', ov), stamp = $('#hp-stamp'), skip = $('.hp-skip', ov);
   const stage = $('#hero-stage'), ticket = $('.hp-ticket'), tkStamp = $('.tk-stamp');
